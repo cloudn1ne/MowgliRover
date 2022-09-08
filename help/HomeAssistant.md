@@ -181,14 +181,13 @@ the GPS location of "mowgli_gps_tracker"
 ```
 
 
-### Raspi CAM Stream for HA
+# Raspi CAM Stream for HA
 
 ## Enable Camera
 
 Follow: https://blog.fearcat.in/a?ID=01800-ebec982b-7267-4650-9aa0-4b00d225f414
 
-## Add Camera to HA
-
+## Integrate Camera into HA
 (taken from https://siytek.com/raspberry-pi-rtsp-to-home-assistant )
 
 ```
@@ -211,7 +210,7 @@ sudo systemctl enable v4l2rtspserver
 sudo systemctl start v4l2rtspserver
 ```
 
-### Raspi CAM Stream HA Integration
+### HA config examples
 
 Add to HA configuration, and restart
 
@@ -235,6 +234,11 @@ v4l2-ctl --set-ctrl horizontal_flip=1
 
 ### Testing
 
-Test accessing the rtsp stream with VLC by opening rtsp://<raspberry-pi-ip>:8554/unicast
+Test accessing the rtsp stream with VLC by opening 
+
+```
+rtsp://<raspberry-pi-ip>:8554/unicast
+```
+
 With VLC redirection you can also save your Mowgli adventures ;-)
 
