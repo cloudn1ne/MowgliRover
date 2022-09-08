@@ -108,12 +108,11 @@ git clone git@github.com:cloudn1ne/MowgliRover.git
 
 ### Clone submodules
 
+This will fetch RTKLIB, openmower_ros and all its subrepos
+
 ```
 cd ~/MowgliRover/
 git submodule update --init --recursive
-git submodule update --init --recursive
-
-(yes 2 times ! - because openmower_ros has subrepos too)
 ```
 
 ### Source your setup.bash files
