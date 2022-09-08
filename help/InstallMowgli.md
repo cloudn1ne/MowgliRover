@@ -88,12 +88,12 @@ alias debug="picocom -b 115200 /dev/ttyAMA1"
 
 ### Configure ROS Core IP (in /opt/ros/noetic/setup.bash)
 
-<your-rover-ip> is your static ip address for the raspi.
+\<your-rover-ip\> is your static ip address for the raspi.
 add the export ROS_IP to your setup.bash file
 
 ```
 export ROS_IP=<your-rover-ip>
-
+   
 CATKIN_SHELL=bash
 ```
 
@@ -104,6 +104,7 @@ CATKIN_SHELL=bash
 ```
 cd ~
 git clone git@github.com:cloudn1ne/MowgliRover.git
+```
 
 ### Clone submodules
 
@@ -146,6 +147,7 @@ cd ~/MowgliRover/scripts
 ## Plugin the YF Mainboard with Mowgli usbnode installed via USB
 
 Your YF mainbord needs to run https://github.com/cloudn1ne/Mowgli/tree/main/stm32/ros_usbnode 
+
 See https://github.com/cloudn1ne/Mowgli for more information how to do that.
 
 ### Install the roscore and rosserial service scripts
@@ -155,8 +157,9 @@ cd ~/MowgliRover/scripts/systemctl
 ./install.sh
 ```
 
-The rosserial script's usbreset expects Mowgli to be connected to /dev/bus/usb/001/002 - If thats not the case (check with lsusb)
-you need to adjust those values. This ensures that rosserial recovers from a reboot/reflash of Mowgli automatically.
+The rosserial script's usbreset expects Mowgli to be connected to /dev/bus/usb/001/002
+
+If thats not the case (check with lsusb) you need to adjust those values. This ensures that rosserial recovers from a reboot/reflash of Mowgli automatically.
 
 
 ## Remove some useless stuff to lighten the load on the Raspi
@@ -169,12 +172,14 @@ sudo systemctl stop ModemManager
 
 ### Reboot 
 
+```
 sudo reboot
+````
 
 ### Install complete
 
 If your Raspi comes back, then congratulations you are now ready to configure Mowgli and Openmower
 
-see ConfigureMowgli.md for the next steps
+See [here](ConfigureMowgli.md) for the next steps
 
 
