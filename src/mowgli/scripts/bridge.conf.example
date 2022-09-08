@@ -1,0 +1,5 @@
+[ha_om_bridge]
+broker = "ha.warp.at"
+port = 1883
+mqtt_username = "<username>"
+mqtt_password = "<password>"
