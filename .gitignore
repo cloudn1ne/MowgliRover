@@ -1,0 +1,17 @@
+devel/
+logs/
+build/
+bin/
+msg_gen/
+srv_gen/
+libraries/
+.DS_Store
+
+# Mowgli SPI flash saves
+./src/mowgli/scripts/cfg/indoor
+./src/mowgli/scripts/cfg/outdoor
+./src/mowgli/scripts/cfg/outdoor_closed
+
+# Mowgli Config files
+mowgli_config.sh
+bridge.conf

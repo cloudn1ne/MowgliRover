@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mowgli</name>
+  <version>0.0.1</version>
+  <description>Compatiblity Layer between Mowgli and OpenMower</description>
+  <maintainer email="cn@warp.at">CyberNet</maintainer>
+  <license>BSD</license>
+  <url type="website">http://github.com/cloudn1ne/mowgli</url> -->
+  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>robot_localization</build_depend>
+  <export>
+  </export>
+</package>

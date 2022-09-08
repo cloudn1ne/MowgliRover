@@ -1,0 +1,15 @@
+uint8 TYPE_INT32=0
+uint8 TYPE_UINT32=1
+uint8 TYPE_FLOAT=2
+uint8 TYPE_DOUBLE=3
+uint8 TYPE_STRING=4
+uint8 TYPE_BARRAY=5
+
+uint8 STATUS_OK=1
+uint8 STATUS_FAIL=0
+
+string name
+---
+uint8 type
+uint8[] data
+uint8 status

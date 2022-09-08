@@ -1,0 +1,57 @@
+
+<!--
+    This launch file sets up the RTK GPS. It assumes that str2str is installed on the host system.
+    The version used at the time of writing can be obtained using GIT:
+    URL: https://github.com/rtklibexplorer/RTKLIB
+    TAG: b34c
+ -->
+<launch>
+    <arg name="serial_port" default="gps"/>
+    <arg name="ntrip_ip" default="10.146.248.20"/>
+    <arg name="ntrip_port" default="2101"/>
+    <arg name="ntrip_endpoint" default="WARP"/>
+    <arg name="ntrip_user" default="ntrip"/>
+    <arg name="ntrip_password" default="command79"/>
+
+    <!-- Run the first str2str instance which does the following:
+        1. connect to serial port and publish the stream on a local server socket.
+        2. Return back all received data to the GPS device.
+        3. Connect to socket server for ROS and publish data there
+     -->
+    <node name="str2str1" type="str2str.sh" pkg="mowgli"
+          required="true"
+          args="-b 1 -in serial://$(env OM_GPS_SERIAL_PORT):921600 -out tcpsvr://127.0.0.1:4242"/>
+
+    <!-- The second instance connects to the base via NTRIP and publishes the data to the local socket created earlier  -->
+    <node name="str2str2" type="str2str.sh" pkg="mowgli"
+          required="true"
+	  args="-in ntrip://$(env OM_NTRIP_USER):$(env OM_NTRIP_PASSWORD)@$(env OM_NTRIP_HOSTNAME):$(env OM_NTRIP_PORT)/$(env OM_NTRIP_ENDPOINT) -out tcpcli://127.0.0.1:4242"/>
+
+    <node pkg="ublox_gps" type="ublox_gps" name="ublox"
+          output="screen"
+          clear_params="true"
+          respawn="true"
+          respawn_delay="5">
+        <rosparam command="load"
+                  file="$(find mowgli)/params/gps.yaml" />
+        <param name="device" value="tcp://127.0.0.1:4242" if="$(env OM_USE_NTRIP)" />
+        <param name="device" value="/dev/$(env OM_GPS_SERIAL_PORT)" unless="$(env OM_USE_NTRIP)" />
+    </node>
+
+<!--
+    <include file="$(find ublox_gps)/launch/ublox_device.launch">
+        <arg name="param_file_name" value="gps"/>
+        <arg name="param_file_dir" value="$(find open_mower)/params"/>
+    </include>
+-->
+
+<!-- not used 
+   <node name="gps_conv" pkg="gps_common" type="utm_odometry_node">
+     <remap from="odom" to="vo"/>
+     <remap from="fix" to="/ublox/fix" />
+     <param name="rot_covariance" value="99999" />
+     <param name="frame_id" value="base_link" />
+   </node>
+-->
+
+</launch>
