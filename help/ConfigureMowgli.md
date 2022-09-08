@@ -21,9 +21,10 @@ which allows for an easy check in rviz if all is right before mowing.
 
 You can obtain this position by running something like:
 
+```
 cd ~MowgliRover
 roslaunch mowgli gps_rtk.launch
-
+```
 and then in another console check for a
 
 1. a good FIX with 
@@ -39,5 +40,5 @@ At this point you can then use the values of "lon" and "lat" for the MOWGLI_DATU
 
 ## Next
 
-see StartMowgli.md for how to startup Mowgli and OpenMower
+see [here](StartMowgli.md) for how to startup Mowgli and OpenMower
 
