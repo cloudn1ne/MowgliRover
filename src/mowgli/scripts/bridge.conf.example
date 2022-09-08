@@ -1,5 +1,5 @@
 [ha_om_bridge]
-broker = "ha.warp.at"
+broker = "<mqtt host>"
 port = 1883
 mqtt_username = "<username>"
 mqtt_password = "<password>"
