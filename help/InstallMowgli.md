@@ -142,7 +142,13 @@ cd ~/MowgliRover/scripts
 ./build_om.sh
 ./build_mowgli.sh
 ```
-
+Note: if you get an error like 
+```
+/home/ubuntu/MowgliRover/src/mowgli/src/mowgli_proxy.cpp:24:10: fatal error: mowgli/status.h: No such file or directory
+   24 | #include <mowgli/status.h>
+      |          ^~~~~~~~~~~~~~~~~
+```
+during building ./build_mowgli.sh - just run it again, and it should build - there is a missing build dependency/order problem somewhere to be fixed
 
 ## Plugin the YF Mainboard with Mowgli usbnode installed via USB
 
