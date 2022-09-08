@@ -23,6 +23,7 @@ You can obtain this position by running something like:
 
 ```
 cd ~MowgliRover
+source source src/mowgli/config/mowgli_config.sh
 roslaunch mowgli gps_rtk.launch
 ```
 and then in another console check for a

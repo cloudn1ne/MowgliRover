@@ -34,8 +34,7 @@
           respawn_delay="5">
         <rosparam command="load"
                   file="$(find mowgli)/params/gps.yaml" />
-        <param name="device" value="tcp://127.0.0.1:4242" if="$(env OM_USE_NTRIP)" />
-        <param name="device" value="/dev/$(env OM_GPS_SERIAL_PORT)" unless="$(env OM_USE_NTRIP)" />
+        <param name="device" value="tcp://127.0.0.1:4242" />
     </node>
 
 <!--
