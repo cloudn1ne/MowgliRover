@@ -8,6 +8,6 @@ If your build deviates (different IMU, connected to Raspi) you will need to adap
 
 
 
-To get started follow the instructions in /help/InstallMowgli.md
+To get started follow the instructions in [here](help/InstallMowgli.md)
 
 
