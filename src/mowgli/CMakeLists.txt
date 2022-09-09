@@ -146,6 +146,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/mowgli_node.cpp)
 
 add_executable(mowgli_proxy src/mowgli_proxy.cpp)
+add_executable(mowgli_blade src/mowgli_blade.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -163,6 +164,9 @@ target_link_libraries(mowgli_proxy
    ${GeographicLib_LIBRARIES}
 )
 
+target_link_libraries(mowgli_blade
+   ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############

@@ -7,8 +7,8 @@ sudo apt-get install samba samba-common smbclient
 add the following entry to /etc/samba/smb.conf
 
 ```
-[Mowgli]
-  path = /home/ubuntu/MowgliRoverROS
+[MowgliRover]
+  path = /home/ubuntu/MowgliRover
   read only = no
   valid users = ubuntu
 ```

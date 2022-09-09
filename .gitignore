@@ -6,6 +6,7 @@ msg_gen/
 srv_gen/
 libraries/
 .DS_Store
+.*
 
 # Mowgli SPI flash saves
 ./src/mowgli/scripts/cfg/indoor

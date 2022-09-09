@@ -9,6 +9,7 @@
 # v1.1: added config file support
 #
 #
+import os
 import random
 import time
 import sys
@@ -20,14 +21,17 @@ from mower_msgs.srv import HighLevelControlSrv,HighLevelControlSrvRequest
 from std_msgs.msg import String
 
 # MQTT config
-config = configparser.RawConfigParser()
-config.read('bridge.conf')
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), 'bridge.conf'))
 broker = config.get('ha_om_bridge', 'broker')
-port   = config.get('ha_om_bridge', 'port')
+port   = config.getint('ha_om_bridge', 'port')
 username = config.get('ha_om_bridge', 'mqtt_username')
 password = config.get('ha_om_bridge', 'mqtt_password')
-mqtt_control_topic = "mowgli/hactrl"
+mqtt_control_topic = config.get('ha_om_bridge', 'mqtt_control_topic')
 client_id = f'mowgli-mqtt-{random.randint(0, 100)}'
+
+print(f"ha_om_bridge.py: broker {username}@{broker}:{port}")
+print(f"ha_om_bridge.py: mqtt_control_topic = {mqtt_control_topic}")
 
 # OM ROS config
 ros_service = "/mower_service/high_level_control"

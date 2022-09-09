@@ -25,7 +25,8 @@
     <param name="gps_filter_factor" value="$(env MOWGLI_GPS_FILTER_FACTOR)" />
     <param name="gps_antenna_offset" value="$(env MOWGLI_GPS_ANTENNA_OFFSET)" />
  </node>
-
+ <!-- Mowgli Blade Managerr -->
+ <node pkg="mowgli" type="mowgli_blade" name="mowgli_to_om_blade_manager" required="true" output="screen" />
  <!-- OM specific settings below this comment-->
  <node name="move_base_flex" pkg="mbf_costmap_nav" type="mbf_costmap_nav" required="true" output="screen">
     <remap from="cmd_vel" to="/nav_vel"/>
@@ -39,7 +40,7 @@
     <rosparam file="$(find mowgli)/params/free_local_planner.yaml" command="load" />
     <rosparam file="$(find mowgli)/params/global_planner_params.yaml" command="load" />
  </node>
- <node name="move_base_legacy_relay" pkg="mbf_costmap_nav" type="move_base_legacy_relay.py">
+ <node name="move_base_legacy_relay" pkg="mbf_costmap_nav" type="move_base_legacy_relay.py" respawn="true">
     <param name="base_local_planner" value="FreePlanner" />
     <param name="base_global_planner" value="GlobalPlanner" />
  </node>

@@ -6,8 +6,10 @@
 #
 #
 # v1.0: inital release
+# v1.1: added config file engine
 #
 #
+import os
 import random
 import time
 import sys
@@ -19,14 +21,21 @@ from std_msgs.msg import String
 from sensor_msgs.msg import NavSatFix
 
 # MQTT config
-config = configparser.RawConfigParser()
-config.read('bridge.conf')
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), 'bridge.conf'))
 broker = config.get('ha_om_bridge', 'broker')
-port   = config.get('ha_om_bridge', 'port')
+port   = config.getint('ha_om_bridge', 'port')
 username = config.get('ha_om_bridge', 'mqtt_username')
 password = config.get('ha_om_bridge', 'mqtt_password')
-mqtt_control_topic = "mowgli/hactrl"
+mqtt_control_topic = config.get('ha_om_bridge', 'mqtt_control_topic')
+mqtt_current_behaviour_topic  = config.get('ha_om_bridge', 'mqtt_current_behaviour_topic')
+frequency = config.getint('ha_om_bridge', 'frequency')
 client_id = f'mowgli-mqtt-{random.randint(0, 100)}'
+print(f"om_ha_bridge.py: broker {username}@{broker}:{port}")
+print(f"om_ha_bridge.py: update frequency: 1/{frequency}")
+print(f"om_ha_bridge.py: mqtt_control_topic = {mqtt_control_topic}")
+print(f"om_ha_bridge.py: mqtt_current_behaviour_topic = {mqtt_current_behaviour_topic}")
+
 
 # nth skip var
 nth = 0
@@ -72,9 +81,10 @@ def gps_callback(data):
 # ROS Topic Callback (mowgli/status)
 def mowgli_callback(data):
     global nth
+    global frequency
 
     # only report every 10th message (=1/sec)
-    if (nth < 10):
+    if (nth < frequency):
         nth = nth +1
         return
     
@@ -104,7 +114,7 @@ def connect_mqtt() -> mqtt_client:
     return client
 
 def run():
-    print("om_ha_bridge.py started")
+    print("om_ha_bridge.py: started")
     rospy.init_node('om_ha_bridge', anonymous=True)
     rospy.Subscriber(ros_topic, String, ros_callback)
     rospy.Subscriber(mowgli_topic, status, mowgli_callback)

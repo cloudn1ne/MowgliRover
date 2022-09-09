@@ -1,5 +1,9 @@
 [ha_om_bridge]
-broker = "<mqtt host>"
+broker = mqtt.domain.blah
 port = 1883
-mqtt_username = "<username>"
-mqtt_password = "<password>"
+mqtt_username = my username 
+mqtt_password = my password
+# only translate every 10th message from Mowgli/OM to HA
+frequency = 10
+mqtt_control_topic = mowgli/hactrl
+mqtt_current_behaviour_topic = mowgli/current_behaviour

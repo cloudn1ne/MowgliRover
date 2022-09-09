@@ -5,7 +5,7 @@
 (only do this once or you lose your settings)
 
 ```
-cp ~MowgliRover/src/mowgli/config/mowgli_config.sh.example ~MowgliRover/src/mowgli/config/mowgli_config.sh
+cp ~/MowgliRover/src/mowgli/config/mowgli_config.sh.example ~/MowgliRover/src/mowgli/config/mowgli_config.sh
 ```
 
 ## Edit mowgli_config.sh
@@ -22,7 +22,7 @@ which allows for an easy check in rviz if all is right before mowing.
 You can obtain this position by running something like:
 
 ```
-cd ~MowgliRover
+cd ~/MowgliRover
 source source src/mowgli/config/mowgli_config.sh
 roslaunch mowgli gps_rtk.launch
 ```
@@ -38,6 +38,12 @@ rostopic echo /ublox/navpvat
 
 At this point you can then use the values of "lon" and "lat" for the MOWGLI_DATUM_LAT/MOWGLI_DATUM_LONG settings (just add a dot after the first 2 numbers)
 
+
+## Edit bridge.conf (if you plan to use HomeAssistant)
+
+Supply host, username, password to ~/MowgliRover/src/mowgli/scripts/bridge.conf
+
+This will be used by the 2 scripts to translate between ROS topics and MQTT topics
 
 ## Next
 
