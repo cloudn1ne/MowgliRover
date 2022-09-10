@@ -20,3 +20,8 @@ Position the Bot and follow this sequence - more details are in the discord chan
 ## Existing AREA_RECORDING mode
 
 After you have recorded your map, either restart Mowgli or press the HOME button (via script 'press_home.sh', or HA)
+
+## Docking Tips
+
+I usually press the 1st X about 2m from the Docking station (in a straight line, facing towards the charger) and the 2nd X when the front of Mowgli is at the threshold where the plastik starts (but not on it yet) - then a docking distance of 0.85m seems to work pretty reliable. (I do have RTK-GPS coverage around my dock)
+
