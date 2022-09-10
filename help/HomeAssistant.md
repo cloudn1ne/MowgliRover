@@ -228,9 +228,11 @@ Add a Picture Glance card and select the camera object
 I had todo both a vertical and horizontal for my camera
 
 ```
-v4l2-ctl --set-ctrl vertical_flip=1
-v4l2-ctl --set-ctrl horizontal_flip=1
+sudo v4l2-ctl --set-ctrl vertical_flip=1
+sudo v4l2-ctl --set-ctrl horizontal_flip=1
 ```
+
+You will also need to add that to /lib/systemd/system/v4l2rtspserver.service as it does not persist.
 
 ### Testing
 
