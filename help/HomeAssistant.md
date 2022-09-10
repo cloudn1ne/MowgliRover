@@ -206,6 +206,7 @@ ExecStart=v4l2rtspserver -W 640 -H 480 -F 15 -P 8554 /dev/video0
 enable and start service
 
 ```
+sudo systemctl daemon-reload
 sudo systemctl enable v4l2rtspserver
 sudo systemctl start v4l2rtspserver
 ```
@@ -225,14 +226,20 @@ Add a Picture Glance card and select the camera object
 
 ### Flipping camera output
 
-I had todo both a vertical and horizontal for my camera
+I had todo both a vertical and horizontal for my camera so the v4l2rtspserver.service needs to adapted,
+by added the two ExecStartPost lines below the ExecStart= line
 
 ```
-sudo v4l2-ctl --set-ctrl vertical_flip=1
-sudo v4l2-ctl --set-ctrl horizontal_flip=1
+ExecStartPost=/usr/bin/v4l2-ctl --set-ctrl vertical_flip=1
+ExecStartPost=/usr/bin/v4l2-ctl --set-ctrl horizontal_flip=1
 ```
 
-You will also need to add that to /lib/systemd/system/v4l2rtspserver.service as it does not persist.
+Dont forget to reload your daemons ;-) before restarting the service
+
+```
+sudo systemctl daemon-reload
+sudo systemctl restart v4l2rtspserver
+```
 
 ### Testing
 
