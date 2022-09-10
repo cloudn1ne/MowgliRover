@@ -89,11 +89,12 @@ alias debug="picocom -b 115200 /dev/ttyAMA1"
 ### Configure ROS Core IP (in /opt/ros/noetic/setup.bash)
 
 \<your-rover-ip\> is your static ip address for the raspi.
-add the export ROS_IP to your setup.bash file
+add the export ROS_IP, ROS_MASTER_URI to your setup.bash file
 
 ```
 export ROS_IP=<your-rover-ip>
-   
+export ROS_MASTER_URI=http://localhost:11311
+
 CATKIN_SHELL=bash
 ```
 
