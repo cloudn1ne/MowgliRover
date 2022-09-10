@@ -192,7 +192,7 @@ Follow: https://blog.fearcat.in/a?ID=01800-ebec982b-7267-4650-9aa0-4b00d225f414
 
 ```
 cd /home/ubuntu
-sudo apt-get install cmake liblog4cpp5-dev libv4l-dev v4l2-ctl git -y
+sudo apt-get install cmake liblog4cpp5-dev libv4l-dev v4l2-ctl v4l-utils git -y
 git clone https://github.com/mpromonet/v4l2rtspserver.git ; cd v4l2rtspserver/ ; cmake . ; make ; sudo make install
 ```
 
