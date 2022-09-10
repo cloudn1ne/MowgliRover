@@ -42,6 +42,7 @@
 #include <sensor_msgs/Imu.h>
 
 // #define MOWGLI_DEBUG  1
+#define MOWGLI_DR_DEBUG 1
 
 // Dynamic Reconfigure for MowgliProxy
 mowgli::MowgliProxyConfig config;
@@ -79,9 +80,8 @@ double delta_x = 0, delta_y = 0;
 double dr_x = 0, dr_y = 0;                      // coordinates that are then tracked by DR alone
 double dr_x_old = 0, dr_y_old = 0;
 
-double dr_max_duration_sec = 20;                // how long in seconds we try to do dead reckoning before stopping /odom messages
 bool dr_active = false;
-bool dr_valid_offsets = false;
+bool dr_possible = false;
 ros::Time dr_starttime(0.0);
 
 // Pubs
@@ -195,7 +195,7 @@ void pubOdometry() {
             0.0, 0.0, 0.0, 0.0, 0.0, 0.000001
     };
 
-    ROS_INFO_DELAYED_THROTTLE(5, "mowgli_proxy: pubOdometry(/odom) GPS-RTK fix?: %s, x = %0.2f (m), y = %0.2f (m), yaw = %0.2f (deg) ", (gpsOdometryIsRTK?"yes":"no"), x, y, r*180/M_PI);
+    ROS_INFO_DELAYED_THROTTLE(5, "mowgli_proxy: pubOdometry(/odom) [ GPS-RTK?: %s, DR?: %s] x = %0.2fm, y = %0.2fm, yaw = %0.2fdeg", (gpsOdometryIsRTK?"yes":"no"), (dr_active?"yes":"no"), x, y, r*180/M_PI);
 
     // publish the message
     pubOdom.publish(odom_msg);
@@ -226,37 +226,39 @@ void updateDeadReckoning(double gps_base_link_x, double gps_base_link_y)
  */
 void doDeadReckoning()
 {
-    if (!dr_active)
+    if (!dr_possible)
     {
-        ROS_WARN("mowgli_proxy: doDeadReckoning: activated");
-        dr_starttime = ros::Time::now();
-        dr_active = true;
+        ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: Dead Reckoning requested but we didnt have a recent GPS RTK fix !");
     }
-    if (dr_active)
-    {
-        if ((ros::Time::now()-dr_starttime).toSec() < dr_max_duration_sec)
+    else
+    {    
+        if (!dr_active)
         {
-            // ROS_WARN("mowgli_proxy: doDeadReckoning: dr_x = %0.2f dr_y = = %0.2f", dr_x, dr_y);
-          //  x = dr_x + dr_x_offset;
-          //  y = dr_y + dr_y_offset;
-            x += (cos(r) * delta_x - sin(r) * delta_y);
-			y += (sin(r) * delta_x + cos(r) * delta_y);
-
-            ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: doDeadReckoning: x = " << x << " y = " << y);
+            ROS_WARN("mowgli_proxy: doDeadReckoning: activated");
+            dr_starttime = ros::Time::now();
             dr_active = true;
-            pubOdometry();
         }
-        else
+        if (dr_active)
         {
-            ROS_ERROR("mowgli_proxy: doDeadReckoning: maximum dead reckoning time reached");
-        }
+            if ((ros::Time::now()-dr_starttime).toSec() < config.dr_max_duration_sec)            
+            {
+#ifdef MOWGLI_DR_DEBUG
+                ROS_WARN("mowgli_proxy: doDeadReckoning: delta_x = %0.2f delta_y = = %0.2f", delta_x, delta_y);
+#endif
+                x += (cos(r) * delta_x - sin(r) * delta_y);
+                y += (sin(r) * delta_x + cos(r) * delta_y);            
+                ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: doDeadReckoning: x = " << x << " y = " << y << " r = " << r*180/M_PI);
+                dr_active = true;
+                pubOdometry();
+            }
+            else
+            {
+                ROS_ERROR("mowgli_proxy: doDeadReckoning: Maximum Dead Reckoning (%d sec) time reached", config.dr_max_duration_sec);
+                dr_possible = false; // block another DR attempt until we get a RTK fix
+                dr_active = false;
+            }
+        }        
     }
-    /*
-    if (!dr_valid_offsets)
-    {
-        ROS_ERROR("mowgli_proxy: dead reockoning requested but we never had a proper GPS RTK fix !");
-    }
-    */
 }
 
 void handleGPSUpdate(tf2::Vector3 gps_pos, double gps_accuracy_m) {   
@@ -277,8 +279,10 @@ void handleGPSUpdate(tf2::Vector3 gps_pos, double gps_accuracy_m) {
     
 
     double distance_to_last_gps = (last_gps_pos - gps_pos).length();
+#ifdef MOWGLI_DR_DEBUG    
    // ROS_INFO_STREAM("mowgli_proxy: distance_to_last_gps = " << distance_to_last_gps );
-    if (distance_to_last_gps < 5.0) 
+#endif   
+    if (distance_to_last_gps <= config.max_distance_to_last_gps_pos) 
     {
         // inlier, we treat it normally
         // calculate current base_link position from orientation and distance parameter
@@ -297,13 +301,13 @@ void handleGPSUpdate(tf2::Vector3 gps_pos, double gps_accuracy_m) {
             ROS_WARN_STREAM("mowgli_proxy: received 10 valid RTK GPS fixes, gpsOdometry is now considered valid");
             ROS_WARN_STREAM("mowgli_proxy: updated base_link coords are: " << gps_base_link_x << ", " << gps_base_link_y);
             gpsRTKOdometryValid = true;
+            dr_possible = true;
         }
-
+        
         if (gpsRTKOdometryValid)
         {
             x = gps_base_link_x;
-            y = gps_base_link_y;   
-        //    updateDeadReckoning(x,y);
+            y = gps_base_link_y;                       
         }
         else
         {
@@ -313,7 +317,7 @@ void handleGPSUpdate(tf2::Vector3 gps_pos, double gps_accuracy_m) {
     } 
     else 
     {
-        ROS_WARN_STREAM("mowgli_proxy: New GPS data is more than 5cm away from last fix. The calculated distance was: " << distance_to_last_gps);
+        ROS_WARN_STREAM("mowgli_proxy: New GPS data is more than " << config.max_distance_to_last_gps_pos << " away from last fix. The calculated distance was: " << distance_to_last_gps);
         gps_outlier_count++;
         // ~10 sec
         if (gps_outlier_count > 10) 
@@ -345,7 +349,7 @@ void MowgliOdomCB(const nav_msgs::Odometry::ConstPtr &msg)
     vr = msg->twist.twist.angular.z;
     // deltas
     delta_x = dr_x_old - dr_x;
-    delta_y = dr_y_old - dr_y;
+    delta_y = dr_y_old - dr_y;    
     dr_x_old = dr_x;
     dr_y_old = dr_y;
   //  ROS_INFO_DELAYED_THROTTLE(1, "mowgli_proxy: MowgliOdomCB x = %0.2f y = %0.2f", x, y);

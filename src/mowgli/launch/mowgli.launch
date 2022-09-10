@@ -24,6 +24,8 @@
     <param name="imu_offset" value="$(env MOWGLI_IMU_OFFSET)" />
     <param name="gps_filter_factor" value="$(env MOWGLI_GPS_FILTER_FACTOR)" />
     <param name="gps_antenna_offset" value="$(env MOWGLI_GPS_ANTENNA_OFFSET)" />
+    <param name="dr_max_duration_sec" value="$(env MOWGLI_DR_MAX_DURATION_SEC)" />
+    <param name="max_distance_to_last_gps_pos" value="$(env MOWGLI_MAX_DISTANCE_TO_LAST_GPS_POS)" />
  </node>
  <!-- Mowgli Blade Managerr -->
  <node pkg="mowgli" type="mowgli_blade" name="mowgli_to_om_blade_manager" required="true" output="screen" />

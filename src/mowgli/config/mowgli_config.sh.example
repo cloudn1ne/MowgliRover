@@ -10,19 +10,20 @@ export OM_MOWER="YardForce500-Mowgli"
 ################################
 export MOWGLI_GPS_ANTENNA_OFFSET=0.36
 export MOWGLI_IMU_OFFSET=-90.0
-export MOWGLI_DATUM_LAT=48.1234567
-export MOWGLI_DATUM_LONG=11.1234567
+export MOWGLI_DATUM_LAT=48.123
+export MOWGLI_DATUM_LONG=16.123
 export MOWGLI_GPS_FILTER_FACTOR=1.0
-
+export MOWGLI_DR_MAX_DURATION_SEC=20
+export MOWGLI_MAX_DISTANCE_TO_LAST_GPS_POS=0.10 
 
 ################################
 ##     NTRIP Settings         ##
 ################################
 export OM_NTRIP_HOSTNAME=10.146.248.20
 export OM_NTRIP_PORT=2101
-export OM_NTRIP_USER=<ntrip-username>
-export OM_NTRIP_PASSWORD=<ntrip-password>
-export OM_NTRIP_ENDPOINT=<ntrip-endpoint>
+export OM_NTRIP_USER=ntrip
+export OM_NTRIP_PASSWORD=mypassword
+export OM_NTRIP_ENDPOINT=ENPOINT
 export OM_GPS_SERIAL_PORT=gps
 
 ################################
