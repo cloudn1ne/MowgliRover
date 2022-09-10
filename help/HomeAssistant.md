@@ -240,6 +240,36 @@ Dont forget to reload your daemons ;-) before restarting the service
 sudo systemctl daemon-reload
 sudo systemctl restart v4l2rtspserver
 ```
+### Color Balancer
+
+If you have red-ish lawn, then color balance does not work i had to another ExecStartPost line to my setup that disabled
+the auto white balance.
+
+```
+ExecStartPost=/usr/bin/v4l2-ctl -c white_balance_auto_preset=0
+```
+
+
+### Sample v4l2rtspserver.service (flipped and auto white balance off)
+
+```
+[Unit]
+Description=V4L2 RTSP server
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+ExecStart=/usr/local/bin/v4l2rtspserver -W 640 -H 480 -F 15 -P 8554 /dev/video0
+ExecStartPost=/usr/bin/v4l2-ctl --set-ctrl vertical_flip=1
+ExecStartPost=/usr/bin/v4l2-ctl --set-ctrl horizontal_flip=1
+ExecStartPost=/usr/bin/v4l2-ctl -c white_balance_auto_preset=0
+WorkingDirectory=/usr/local/share/v4l2rtspserver
+
+[Install]
+WantedBy=multi-user.target
+```
 
 ### Testing
 
