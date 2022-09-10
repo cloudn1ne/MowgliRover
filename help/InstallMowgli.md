@@ -145,7 +145,8 @@ cd ~/MowgliRover/scripts
 
 ## Plugin the YF Mainboard with Mowgli usbnode installed via USB
 
-Your YF mainbord needs to run https://github.com/cloudn1ne/Mowgli/tree/main/stm32/ros_usbnode 
+Your YF mainbord needs to run https://github.com/cloudn1ne/Mowgli/tree/main/stm32/ros_usbnode
+*You need to run a version released after 10th Sept 2022 as only those will include the required srvs and topics !!!) - it will not work with an older version * 
 
 See https://github.com/cloudn1ne/Mowgli for more information how to do that.
 
