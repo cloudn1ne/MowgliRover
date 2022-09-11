@@ -6,7 +6,7 @@
  *
  *
  * v1.0: inital release
- * v1.1: using async ros spinners to handle blade keepalive and processing of topics
+ * v1.1: DR experimentaly code added
  *
  */
 
@@ -77,12 +77,23 @@ double delta_x = 0, delta_y = 0;
 
 // Mowgli ODOM (Dead Reckoning)
 // double dr_x_offset = 0, dr_y_offset = 0;        // offset (between RTK and Mowgli Odom) is updated with every valid RTK fix
-double dr_x = 0, dr_y = 0;                      // coordinates that are then tracked by DR alone
+double dr_x = 0, dr_y = 0;                         // coordinates that are then tracked by DR alone
 double dr_x_old = 0, dr_y_old = 0;
+double dr_x_offset = 0, dr_y_offset = 0;           // DR offsets between GPS-RKT and /mowgli/odom - synced whenever we have a GPS-RTK fix
 
+bool dr_valid_offsets = false;
 bool dr_active = false;
 bool dr_possible = false;
+bool dr_update_offsets = false;
+
 ros::Time dr_starttime(0.0);
+
+// DR ticks based
+unsigned long dr_left_encoder_ticks = 0;
+unsigned long dr_right_encoder_ticks = 0;
+
+unsigned long dr_left_encoder_ticks_offset = 0;
+unsigned long dr_right_encoder_ticks_offset = 0;
 
 // Pubs
 ros::Publisher pubOMStatus;
@@ -104,6 +115,16 @@ bool mowEmergencyDisableFlag = false;
 //tf::TransformBroadcaster transform_broadcaster;
 //tf2_ros::TransformListener tfListener(tfBuffer);
 //geometry_msgs::TransformStamped transformStamped;
+
+bool setDRreset(std_srvs::SetBool::Request &req,std_srvs::SetBool::Response &res)
+{
+    ROS_INFO_STREAM("mowgli_proxy: setDRreset()");
+	if (req.data)
+    {
+        dr_update_offsets = true;
+    }
+    return true;
+}
 
 bool setGpsState(mower_msgs::GPSControlSrvRequest &req, mower_msgs::GPSControlSrvResponse &res) {    
     ROS_INFO_STREAM("mowgli_proxy: setGpsState =" << gpsEnabled);
@@ -195,31 +216,50 @@ void pubOdometry() {
             0.0, 0.0, 0.0, 0.0, 0.0, 0.000001
     };
 
-    ROS_INFO_DELAYED_THROTTLE(5, "mowgli_proxy: pubOdometry(/odom) [ GPS-RTK?: %s, DR?: %s] x = %0.2fm, y = %0.2fm, yaw = %0.2fdeg", (gpsOdometryIsRTK?"yes":"no"), (dr_active?"yes":"no"), x, y, r*180/M_PI);
+ //   ROS_INFO_DELAYED_THROTTLE(5, "mowgli_proxy: pubOdometry(/odom) [ GPS-RTK?: %s, DR?: %s] x = %0.2fm, y = %0.2fm, yaw = %0.2fdeg", (gpsOdometryIsRTK?"yes":"no"), (dr_active?"yes":"no"), x, y, r*180/M_PI);
+ //   if (dr_valid_offsets)
+ //   {
+ //       ROS_INFO_DELAYED_THROTTLE(5, "mowgli_proxy: pubOdometry(/odom) [ DR Method 2 Coords   ] x = %0.2fm, y = %0.2fm",  dr_x+dr_x_offset, dr_y+dr_y_offset);
+ //   }
+
+    ROS_INFO_DELAYED_THROTTLE(1, "--------------------------------------------------------------------------------------------------------------");
+    ROS_INFO_DELAYED_THROTTLE(1, "mowgli_proxy: pubOdometry(/odom) [ GPS-RTK?: %s, DR?: %s] x = %0.2fm, y = %0.2fm, yaw = %0.2fdeg", (gpsOdometryIsRTK?"yes":"no"), (dr_active?"yes":"no"), x, y, r*180/M_PI);
+    if (dr_valid_offsets)
+    {
+        ROS_INFO_DELAYED_THROTTLE(1, "mowgli_proxy: DR encoder ticks  L = %ld, R = %ld",  dr_left_encoder_ticks-dr_left_encoder_ticks_offset, dr_right_encoder_ticks-dr_right_encoder_ticks_offset);
+     //   ROS_INFO_DELAYED_THROTTLE(1, "mowgli_proxy: DR raw        x = %0.2fm, y = %0.2fm",  dr_x, dr_y);
+     //   ROS_INFO_DELAYED_THROTTLE(1, "mowgli_proxy: DR synced     x = %0.2fm, y = %0.2fm",  dr_x-dr_x_offset, dr_y-dr_y_offset);
+     //   ROS_INFO_DELAYED_THROTTLE(1, "mowgli_proxy: DR divergence x = %0.2fm, y = %0.2fm",  x-(dr_x-dr_x_offset), y-(dr_y-dr_y_offset));
+    }
+    
 
     // publish the message
     pubOdom.publish(odom_msg);
 }
 
-/*
+
 void updateDeadReckoning(double gps_base_link_x, double gps_base_link_y)
 {
-    if (!dr_valid_offsets)
+    if (dr_update_offsets)
     {
-        ROS_WARN("mowgli_proxy: initial Dead Reckoning offsets captured");
+        ROS_WARN("mowgli_proxy: Dead Reckoning offsets captured");
+        // update DR offets
+        dr_x_offset = gps_base_link_x - dr_x;
+        dr_y_offset = gps_base_link_y - dr_y;
+    // ROS_WARN("mowgli_proxy: updateDeadReckoning: dr_x = %0.2f dr_y = = %0.2f", dr_x, dr_y);
+    // ROS_WARN("mowgli_proxy: updateDeadReckoning: gps_base_link_x = %0.2f gps_base_link_y = = %0.2f", gps_base_link_x, gps_base_link_y);
+    // ROS_WARN("mowgli_proxy: updateDeadReckoning: dr_x_offset = %0.2f dr_y_offset = = %0.2f", dr_x_offset, dr_y_offset);
+        
+        dr_left_encoder_ticks_offset = dr_left_encoder_ticks;
+        dr_right_encoder_ticks_offset = dr_right_encoder_ticks;
+
+     //   dr_active = false;
+        dr_update_offsets = false;
+        dr_valid_offsets = true;
+     //   dr_starttime = ros::Time(0.0);
     }
-    // update DR offets
-    dr_x_offset = gps_base_link_x - dr_x;
-    dr_y_offset = gps_base_link_y - dr_y;
-   // ROS_WARN("mowgli_proxy: updateDeadReckoning: dr_x = %0.2f dr_y = = %0.2f", dr_x, dr_y);
-   // ROS_WARN("mowgli_proxy: updateDeadReckoning: gps_base_link_x = %0.2f gps_base_link_y = = %0.2f", gps_base_link_x, gps_base_link_y);
-   // ROS_WARN("mowgli_proxy: updateDeadReckoning: dr_x_offset = %0.2f dr_y_offset = = %0.2f", dr_x_offset, dr_y_offset);
-    
-    dr_active = false;
-    dr_valid_offsets = true;
-    dr_starttime = ros::Time(0.0);
 }
-*/
+
 
 /*
  * Perform dead reckoning based on /mowgli/odom 
@@ -247,7 +287,7 @@ void doDeadReckoning()
 #endif
                 x += (cos(r) * delta_x - sin(r) * delta_y);
                 y += (sin(r) * delta_x + cos(r) * delta_y);            
-                ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: doDeadReckoning: x = " << x << " y = " << y << " r = " << r*180/M_PI);
+                ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: doDeadReckoning method 1: x = " << x << " y = " << y << " r = " << r*180/M_PI);
                 dr_active = true;
                 pubOdometry();
             }
@@ -307,7 +347,8 @@ void handleGPSUpdate(tf2::Vector3 gps_pos, double gps_accuracy_m) {
         if (gpsRTKOdometryValid)
         {
             x = gps_base_link_x;
-            y = gps_base_link_y;                       
+            y = gps_base_link_y;       
+            updateDeadReckoning(gps_base_link_x, gps_base_link_y);                
         }
         else
         {
@@ -378,6 +419,9 @@ void MowgliStatusCB(const mowgli::status::ConstPtr &msg)
     om_mower_status.right_esc_status.status = mower_msgs::ESCStatus::ESC_STATUS_OK;
     om_mower_status.mow_esc_status.temperature_motor = 20;
 
+    dr_left_encoder_ticks = msg->left_encoder_ticks;
+    dr_right_encoder_ticks = msg->right_encoder_ticks;
+
     pubOMStatus.publish(om_mower_status);
 }
 
@@ -422,9 +466,9 @@ void GPSPositionReceivedFixCB(const sensor_msgs::NavSatFix::ConstPtr &msg)
     }
     // test if we have a proper RTK fix accoring to /ublox/navpvt/flags
     unsigned int carrSoln = (gps_quality_flags >> 6) & 3;
-    if (carrSoln != 0x2 )
+    if (carrSoln != 0x2 && config.gpsrtk_fix_required)
     {
-        ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: Dropped GPS Update due to carrier phase range solution not being FIXED (gps quality might not be good enough)");
+        ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: Dropped GPS Update due to carrier phase range solution not being FIXED (gps quality might not be good enough)" << config.gpsrtk_fix_required);
         doDeadReckoning();
         gpsOdometryIsRTK = false;
         return;
@@ -509,6 +553,8 @@ int main(int argc, char **argv)
     // Services required by OpenMower
     ros::ServiceServer om_emergency_service = n.advertiseService("mower_service/emergency", setEmergencyStop);
     ros::ServiceServer om_gps_service = n.advertiseService("mower_service/set_gps_state", setGpsState);
+
+    ros::ServiceServer mowgli_dr_reset = n.advertiseService("mowgli/dr_reset", setDRreset);
 
     /*
      * GPS (ublox/fix) processing

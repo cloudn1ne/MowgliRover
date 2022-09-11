@@ -26,6 +26,7 @@
     <param name="gps_antenna_offset" value="$(env MOWGLI_GPS_ANTENNA_OFFSET)" />
     <param name="dr_max_duration_sec" value="$(env MOWGLI_DR_MAX_DURATION_SEC)" />
     <param name="max_distance_to_last_gps_pos" value="$(env MOWGLI_MAX_DISTANCE_TO_LAST_GPS_POS)" />
+    <param name="gpsrtk_fix_required" value="$(env MOWGLI_GPSRTK_FIX_REQUIRED)" />
  </node>
  <!-- Mowgli Blade Managerr -->
  <node pkg="mowgli" type="mowgli_blade" name="mowgli_to_om_blade_manager" required="true" output="screen" />
@@ -38,9 +39,10 @@
     <rosparam file="$(find mowgli)/params/global_costmap_params.yaml" command="load" />
     <rosparam file="$(find mowgli)/params/move_base_flex.yaml" command="load"/>
     <rosparam file="$(find mowgli)/params/ftc_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/calibration_local_planner.yaml" command="load" />
     <rosparam file="$(find mowgli)/params/docking_ftc_local_planner.yaml" command="load" />
     <rosparam file="$(find mowgli)/params/free_local_planner.yaml" command="load" />
-    <rosparam file="$(find mowgli)/params/global_planner_params.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/global_planner_params.yaml" command="load" /> 
  </node>
  <node name="move_base_legacy_relay" pkg="mbf_costmap_nav" type="move_base_legacy_relay.py" respawn="true">
     <param name="base_local_planner" value="FreePlanner" />
