@@ -84,6 +84,7 @@ sudo apt-get -y install g++ cpp cmake ros-noetic-tf2-eigen ros-noetic-teleop-twi
 ```
 alias depit="rosdep install --from-paths src --ignore-src -r -y"
 alias debug="picocom -b 115200 /dev/ttyAMA1"
+alias vbat="rostopic echo -n 1 /mowgli/status/v_battery | head -1"
 ```
 
 ### Configure ROS Core IP (in /opt/ros/noetic/setup.bash)
