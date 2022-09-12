@@ -5,6 +5,3 @@
 [submodule "src/open_mower_ros"]
 	path = src/open_mower_ros
 	url = https://github.com/ClemensElflein/open_mower_ros
-[submodule "src/robot_localization"]
-	path = src/robot_localization
-	url = https://github.com/cra-ros-pkg/robot_localization.git
