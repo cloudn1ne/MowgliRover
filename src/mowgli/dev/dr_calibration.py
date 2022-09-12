@@ -43,14 +43,14 @@ def dr_reset():
     mowgli_left_encoder_ticks_offset = mowgli_left_encoder_ticks;
     mowgli_right_encoder_ticks_offset = mowgli_right_encoder_ticks;
 
-    rospy.wait_for_service('/mowgli/dr_reset')
-    try:
-        rospy.loginfo("Resetting DR Offsets")
-        dr_reset = rospy.ServiceProxy('/mowgli/dr_reset', SetBool)
-        resp1 = dr_reset(1)
-        return resp1
-    except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
+   # rospy.wait_for_service('/mowgli/dr_reset')
+   # try:
+   #     rospy.loginfo("Resetting DR Offsets")
+   #     dr_reset = rospy.ServiceProxy('/mowgli/dr_reset', SetBool)
+   #     resp1 = dr_reset(1)
+   #     return resp1
+   # except rospy.ServiceException as e:
+   #     print("Service call failed: %s"%e)
 
 def mowgli_status(data):
     global mowgli_left_encoder_ticks, mowgli_right_encoder_ticks
@@ -97,7 +97,7 @@ def drive_cycle(goals):
         if result.outcome != mbf_msgs.MoveBaseResult.SUCCESS:
             rospy.loginfo("Unable to complete action: %s", result.message)
             return 
-        if r_idx == 222:
+        if r_idx == 2:
             dr_reset()
         rospy.loginfo("mowgli is now at (%1.3f, %1.3f)", mowgli_x, mowgli_y)
         if r_idx == 3:
