@@ -48,4 +48,10 @@ For now we want OM to ignore GPS errors (convariance to big when we run on DR)
 export OM_IGNORE_GPS_ERRORS=true
 ```
 
+## Sample .rviz file to visualize DR (yellow)
+
+```
+~/MowgliRover/src/mowgli/dev/rviz/record_map_mowgli.rviz
+```
+
 
