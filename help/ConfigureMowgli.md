@@ -49,6 +49,8 @@ This will be used by the 2 scripts to translate between ROS topics and MQTT topi
 
 Check [here](https://github.com/cloudn1ne/MowgliBase/blob/main/help/Setup.md) on howto setup a ROS Linux Host to perform this.
 
+Alternatively you could checkout the repo onto the Raspi and try there, i have however not tried that yet (let me know if it works)
+
 ## Next
 
 see [here](StartMowgli.md) for how to startup Mowgli and OpenMower
