@@ -45,6 +45,10 @@ Supply host, username, password to ~/MowgliRover/src/mowgli/scripts/bridge.conf
 
 This will be used by the 2 scripts to translate between ROS topics and MQTT topics
 
+## Calibrate Mowglis Magnetometer
+
+Check [here](https://github.com/cloudn1ne/MowgliBase/blob/main/help/Setup.md) on howto setup a ROS Linux Host to perform this.
+
 ## Next
 
 see [here](StartMowgli.md) for how to startup Mowgli and OpenMower
