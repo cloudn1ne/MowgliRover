@@ -12,7 +12,7 @@ So short outages or GPS quality issues should be no problem for Mowgli. I manage
 
 ## Setup
 
-Install the latest Mowgli (str32) version that provides the required TF and /mowlgi/odom topic.
+Install the [latest Mowgli (stm32)](https://github.com/cloudn1ne/Mowgli) version that provides the required TF and /mowlgi/odom topic.
 Any version older than 11th Sept should work.
 
 ## Check version (TF and /mowgli/odom topic is needed)
@@ -21,7 +21,7 @@ Any version older than 11th Sept should work.
 rostopic echo -n 1 /mowgli/odom |grep frame
 ```
 
-rostopic needs to show the below frame_id and child_frame_id otherwise you are running an too old version of Mwogli (stm32).
+rostopic needs to show the below frame_id and child_frame_id otherwise you are running an too old version of Mowgli (stm32).
 
 ```
 frame_id: "odom_dr"
@@ -30,7 +30,7 @@ child_frame_id: "base_link_dr"
 
 ## Add new mowgli_config.sh options
 
-*MOWGLI_DR_MAX_DURATION_SEC* = How long Mowlgi will drive with dead reckoning only (no valid GPS fix)
+*MOWGLI_DR_MAX_DURATION_SEC* = How long Mowgli will drive with dead reckoning only (no valid GPS fix)
 *MOWGLI_DR_UPDATE_INTERVAL* = How often Mowgli will update the EKF state with the current valid GPS fix and IMU heading.
 
 Default settings to add to ~/MowgliRover/src/mowlgi/config/mowgli_config.sh
