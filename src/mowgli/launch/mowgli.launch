@@ -1,9 +1,4 @@
 <launch>
- <!-- Robot description and state publishers / not used at the moment -->
- <!-- <param name="robot_description" command="cat '$(find mowgli)/description/mowgli.xml'" />
-      <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-      <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" /> -->
-
  <!-- external IMU filtering -->
  <include file="$(find mowgli)/launch/include/madgwick.launch" />
 
@@ -12,6 +7,9 @@
 
 <!--  <include file="$(find mowgli)/launch/include/gps_warp.launch" /> -->
 <!--  <include file="$(find mowgli)/launch/include/gps_euref.launch" /> --> 
+
+ <!-- EKF -->
+ <include file="$(find mowgli)/launch/include/ekf.launch" />
 
  <!-- Mowgli/OM to HomeAssistant Proxy -->
  <node pkg="mowgli" type="om_ha_bridge.py" name="om_ha_bridge" output="screen"/>
@@ -25,10 +23,11 @@
     <param name="gps_filter_factor" value="$(env MOWGLI_GPS_FILTER_FACTOR)" />
     <param name="gps_antenna_offset" value="$(env MOWGLI_GPS_ANTENNA_OFFSET)" />
     <param name="dr_max_duration_sec" value="$(env MOWGLI_DR_MAX_DURATION_SEC)" />
+    <param name="dr_update_interval" value="$(env MOWGLI_DR_UPDATE_INTERVAL)" />
     <param name="max_distance_to_last_gps_pos" value="$(env MOWGLI_MAX_DISTANCE_TO_LAST_GPS_POS)" />
     <param name="gpsrtk_fix_required" value="$(env MOWGLI_GPSRTK_FIX_REQUIRED)" />
  </node>
- <!-- Mowgli Blade Managerr -->
+ <!-- Mowgli Blade Manager -->
  <node pkg="mowgli" type="mowgli_blade" name="mowgli_to_om_blade_manager" required="true" output="screen" />
  <!-- OM specific settings below this comment-->
  <node name="move_base_flex" pkg="mbf_costmap_nav" type="mbf_costmap_nav" required="true" output="screen">

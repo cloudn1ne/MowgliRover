@@ -97,9 +97,9 @@ def drive_cycle(goals):
         if result.outcome != mbf_msgs.MoveBaseResult.SUCCESS:
             rospy.loginfo("Unable to complete action: %s", result.message)
             return 
-        if r_idx == 2:
+        if r_idx == 222:
             dr_reset()
-        #rospy.loginfo("mowgli is now at (%1.3f, %1.3f)", mowgli_x, mowgli_y)
+        rospy.loginfo("mowgli is now at (%1.3f, %1.3f)", mowgli_x, mowgli_y)
         if r_idx == 3:
             tpm = ((dr_left_ticks()+dr_right_ticks())/2.0)/5.0      # avg l&r divided by distance (5.0)
             rospy.loginfo("mowgli ticks are now (%ld, %ld) ticks per meter: %0.2f", dr_left_ticks(), dr_right_ticks(), tpm)
@@ -117,17 +117,17 @@ if __name__ == '__main__':
     rospy.loginfo("Connected to Move Base Flex action server!")
 
     # drive cycle paths (horiz/vert)
-    goals_x = [   create_goal(-6, -0, 0, 270, "CalibrationFastPlanner"), # approach position (use Fast Mode ;-)
+    goals_x = [   create_goal(-6, -0, 0, 270, "CalibrationPlanner"), # approach position (use Fast Mode ;-)
                   create_goal(-6, -1, 0, 270, "CalibrationPlanner"), # start / reset ticks
                   create_goal(-6, -6, 0, 270, "CalibrationPlanner")  # final
     ]
 
-    goals_y = [   create_goal(-9, -3, 0, 0, "CalibrationFastPlanner"), # approach position (use Fast Mode ;-)
+    goals_y = [   create_goal(-9, -3, 0, 0, "CalibrationPlanner"), # approach position (use Fast Mode ;-)
                   create_goal(-8, -3, 0, 0, "CalibrationPlanner"), # start / reset ticks
                   create_goal(-3, -3, 0, 0, "CalibrationPlanner")  # final
     ]
 
-    cycles = 5      # how many X and Y paths should be driven and averaged
+    cycles = 1      # how many X and Y paths should be driven and averaged
     tpm_sum = 0
     for x in range(cycles):
         tpm_sum = tpm_sum + drive_cycle(goals_x)

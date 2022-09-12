@@ -2,9 +2,9 @@ CalibrationPlanner:
   acceleration: 0.1
   forward_only: true
   goal_timeout: 20.0
-  kd_ang: 0.0
-  kd_lat: 0.0
-  kd_lon: 0.0
+  kd_ang: 0.1
+  kd_lat: 0.1
+  kd_lon: 0.1
   ki_ang: 0.0
   ki_ang_max: 0.0
   ki_lat: 0.0
@@ -13,7 +13,7 @@ CalibrationPlanner:
   ki_lon_max: 0.0
   kp_ang: 10
   kp_lat: 20
-  kp_lon: 3
+  kp_lon: 3 # 3
   max_cmd_vel_ang: 1.0 
   max_cmd_vel_speed: 0.2
   max_follow_distance: 1.0
@@ -30,9 +30,9 @@ CalibrationFastPlanner:
   acceleration: 0.1
   forward_only: true
   goal_timeout: 20.0
-  kd_ang: 0.0
-  kd_lat: 0.0
-  kd_lon: 0.0
+  kd_ang: 0.1
+  kd_lat: 0.1
+  kd_lon: 0.1
   ki_ang: 0.0
   ki_ang_max: 0.0
   ki_lat: 0.0
