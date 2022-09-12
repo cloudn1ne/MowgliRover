@@ -58,6 +58,7 @@
 	<param name="battery_empty_voltage" value="$(env OM_BATTERY_EMPTY_VOLTAGE)"/>
 	<param name="battery_full_voltage" value="$(env OM_BATTERY_FULL_VOLTAGE)"/>
 	<param name="gps_timeout" value="$(env OM_GPS_TIMEOUT_SEC)"/>
+	<param name="ignore_gps_errors" value="$(env OM_IGNORE_GPS_ERRORS)" />
         <remap from="/odom" to="/mower/odom"/> 
 	<remap to="/odom" from="/mower/odom"/>
  </node>

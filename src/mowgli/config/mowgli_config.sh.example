@@ -43,6 +43,9 @@ export OM_GPS_TIMEOUT_SEC=3.0
 # Mowing Behavior Settings (needs to be true to enable Blade Motor)
 export OM_ENABLE_MOWER=true
 
+# Ignore GPS errors (we handle that in mowgli_proxy)
+export OM_IGNORE_GPS_ERRORS=true
+
 # Mow/Docking settings
 export OM_AUTOMATIC_START=false
 export OM_OUTLINE_OFFSET=0.5
