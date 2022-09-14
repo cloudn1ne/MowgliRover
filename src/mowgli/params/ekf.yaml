@@ -5,7 +5,7 @@ ekf_se_odom:
   transform_time_offset: 0.0
   transform_timeout: 0.0
   print_diagnostics: true
-  debug: true
+  debug: false # will fillup DISK (~/.ros/robot_localization) pretty quickly !t
   publish_tf: true
 
   map_frame: map
