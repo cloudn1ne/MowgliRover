@@ -116,6 +116,7 @@ This will fetch RTKLIB, openmower_ros and all its subrepos
 ```
 cd ~/MowgliRover/
 git submodule update --init --recursive
+catkin_make
 ```
 
 ### Source your setup.bash files
