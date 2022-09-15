@@ -23,7 +23,7 @@ You can obtain this position by running something like:
 
 ```
 cd ~/MowgliRover
-source source src/mowgli/config/mowgli_config.sh
+source src/mowgli/config/mowgli_config.sh
 roslaunch mowgli gps_rtk.launch
 ```
 and then in another console check for a
@@ -31,7 +31,7 @@ and then in another console check for a
 1. a good FIX with 
 
 ```
-rostopic echo /ublox/navpvat
+rostopic echo /ublox/navpvt
 ```
 
 2. when the flags value is showing 131 it means you have a good fix.
