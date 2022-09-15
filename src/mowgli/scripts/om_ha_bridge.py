@@ -95,6 +95,8 @@ def mowgli_callback(data):
     v_charge_str = f"{data.v_charge:.2f}"
     mqtt_pub("mowgli/v_charge", v_charge_str)
     i_charge_str = f"{data.i_charge:.2f}"
+    charge_pwm_str = f"{data.charge_pwm}"
+    mqtt_pub("mowgli/charge_pwm", charge_pwm_str)
     mqtt_pub("mowgli/i_charge", i_charge_str)
     mqtt_pub("mowgli/is_charging", data.is_charging)
 

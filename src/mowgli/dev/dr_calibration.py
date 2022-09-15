@@ -116,15 +116,19 @@ if __name__ == '__main__':
     mbf_ac.wait_for_server(rospy.Duration(10))
     rospy.loginfo("Connected to Move Base Flex action server!")
 
+
+    # use the following planner to calibrate 
+    planner = "CalibrationPlanner"
+
     # drive cycle paths (horiz/vert)
-    goals_x = [   create_goal(-6, -0, 0, 270, "CalibrationPlanner"), # approach position (use Fast Mode ;-)
-                  create_goal(-6, -1, 0, 270, "CalibrationPlanner"), # start / reset ticks
-                  create_goal(-6, -6, 0, 270, "CalibrationPlanner")  # final
+    goals_x = [   create_goal(-6, -0, 0, 270, planner), # approach position (use Fast Mode ;-)
+                  create_goal(-6, -1, 0, 270, planner), # start / reset ticks
+                  create_goal(-6, -6, 0, 270, planner)  # final
     ]
 
-    goals_y = [   create_goal(-9, -3, 0, 0, "CalibrationPlanner"), # approach position (use Fast Mode ;-)
-                  create_goal(-8, -3, 0, 0, "CalibrationPlanner"), # start / reset ticks
-                  create_goal(-3, -3, 0, 0, "CalibrationPlanner")  # final
+    goals_y = [   create_goal(-9, -3, 0, 0, planner), # approach position (use Fast Mode ;-)
+                  create_goal(-8, -3, 0, 0, planner), # start / reset ticks
+                  create_goal(-3, -3, 0, 0, planner)  # final
     ]
 
     cycles = 1      # how many X and Y paths should be driven and averaged
