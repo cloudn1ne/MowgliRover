@@ -47,7 +47,7 @@ sudo apt -y remove --autoremove snapd
 ```
 sudo apt-get update
 sudo apt-get -y upgrade
-sudo apt-get -y install curl
+sudo apt-get -y install curl git
 ```
 
 ## Install ROS noetic -> http://wiki.ros.org/noetic/Installation/Ubuntu

@@ -158,6 +158,9 @@ add_executable(mowgli_blade src/mowgli_blade.cpp)
 ## same as for the library above
 #add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+# make sure we build the status.msg BEFORE we build mowgli_proxy
+add_dependencies(mowgli_proxy mowgli_generate_messages_cpp)
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(mowgli_proxy
    ${catkin_LIBRARIES}
