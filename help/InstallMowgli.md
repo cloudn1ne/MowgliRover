@@ -7,6 +7,7 @@
 * USB Keyboard
 * Mini HDMI to XXX adapter and a monitor
 * WLAN credentials and internet connectivity
+* A PC running Ubuntu 20.04 (for Magentometer Calibration) or untested by me it should run on the Raspi4 as well.
 
 ## Install Ubuntu 20.04 Server 
 
@@ -115,6 +116,7 @@ This will fetch RTKLIB, openmower_ros and all its subrepos
 ```
 cd ~/MowgliRover/
 git submodule update --init --recursive
+catkin_make
 ```
 
 ### Source your setup.bash files
