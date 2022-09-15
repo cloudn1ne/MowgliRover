@@ -106,7 +106,7 @@ CATKIN_SHELL=bash
 
 ```
 cd ~
-git clone git@github.com:cloudn1ne/MowgliRover.git
+git clone https://github.com/cloudn1ne/MowgliRover.git
 ```
 
 ### Clone submodules
