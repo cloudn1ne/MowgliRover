@@ -74,7 +74,7 @@ echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 echo "source ~/MowgliRover/devel/setup.bash" >> ~/.bashrc
 ```
 
-### Install ROS packages and other good stuff that Mowgli an OM will need
+### Install ROS packages and other good stuff that Mowgli and OM will need
 
 ```
 sudo apt-get -y install g++ cpp cmake ros-noetic-tf2-eigen ros-noetic-teleop-twist-keyboard ros-noetic-robot-state-publisher ros-noetic-joint-state-publisher ros-noetic-map-server ros-noetic-rosserial-server ros-noetic-gps-common picocom libraspberrypi-bin  ros-noetic-tf2-geometry-msgs ros-noetic-robot-localization libraspberrypi-dev libraspberrypi0 libpigpiod-if-dev wavemon ros-noetic-rosserial-arduino python3-paho-mqtt openocd python3-rosdep
@@ -137,7 +137,7 @@ source ~/.bashrc
 
 ### Build Mowgli, OM and RTKLIBs strstr
 
-create a swap file around 4G in size if you have less than 4G memory or compiles will fail (and take ages)
+Note: Create a swap file around 4G in size if you have less than 4G memory or compiles will fail (and take ages). I managed to (test) compile this on a Raspi3 that way, but i have not actually tried to run it with a real bot.
 
 ```
 cd ~/MowgliRover/scripts
@@ -150,7 +150,10 @@ cd ~/MowgliRover/scripts
 ## Plugin the YF Mainboard with Mowgli usbnode installed via USB
 
 Your YF mainbord needs to run https://github.com/cloudn1ne/Mowgli/tree/main/stm32/ros_usbnode
-*You need to run a version released after 10th Sept 2022 as only those will include the required srvs and topics !!!) - it will not work with an older version * 
+
+**You need to run a version released after 10th Sept 2022 as only those will include the required srvs and topics !!!) - it will not work with an older version **
+
+In general its a good idea to update Mowgli (stm32) whenever there is a new release because some feature enhancements on MowgliRover will need new stm32 code (or fixes there). Hopefully a version system will soon be working that will tell you that your Mowgli (stm32) is too old when running MowgliRover.
 
 See https://github.com/cloudn1ne/Mowgli for more information how to do that.
 
