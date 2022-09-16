@@ -116,7 +116,11 @@ ros::Subscriber subEKFOdom;
 
 // Service Clients
 ros::ServiceClient mowClient;
-bool mowEmergencyDisableFlag = false;            
+bool mowEmergencyDisableFlag = false;          
+
+// Debug 
+bool debug_gps_invalid = false;
+
 
 // TF
 //tf2_ros::Buffer tfBuffer; 
@@ -124,13 +128,10 @@ bool mowEmergencyDisableFlag = false;
 //tf2_ros::TransformListener tfListener(tfBuffer);
 //geometry_msgs::TransformStamped transformStamped;
 
-bool setDRreset(std_srvs::SetBool::Request &req,std_srvs::SetBool::Response &res)
+bool setDebugGPSInvalid(std_srvs::SetBool::Request &req,std_srvs::SetBool::Response &res)
 {
-    ROS_INFO_STREAM("mowgli_proxy: setDRreset()");
-	if (req.data)
-    {
-        dr_update_offsets = true;
-    }
+    ROS_INFO_STREAM("mowgli_proxy: setDebugGPSInvalid(" << req.data << ")");
+    debug_gps_invalid = req.data;
     return true;
 }
 
@@ -228,7 +229,6 @@ void pubOdometry(double odom_x, double odom_y, double odom_vx, double odom_vr, g
  //       ROS_INFO_DELAYED_THROTTLE(5, "mowgli_proxy: pubOdometry(/odom) [ DR Method 2 Coords   ] x = %0.2fm, y = %0.2fm",  dr_x+dr_x_offset, dr_y+dr_y_offset);
  //   }
 
-    ROS_INFO_DELAYED_THROTTLE(1, "--------------------------------------------------------------------------------------------------------------");
     if (dr_active)
         ROS_INFO_DELAYED_THROTTLE(1, "mowgli_proxy: pubOdometry(/odom) [ DR ] x = %0.2fm, y = %0.2fm, yaw = %0.2fdeg", odom_x, odom_y, r*180/M_PI);
     else
@@ -469,6 +469,14 @@ void GPSPositionReceivedFixCB(const sensor_msgs::NavSatFix::ConstPtr &msg)
             (e-datumE), (n-datumN), 0.0
     );
 
+    // Debug
+    if (debug_gps_invalid)
+    {   
+          ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: mowgli_debug/gps_invalid active - faking GPS outage");
+          doDeadReckoning();
+          return;
+    }
+
     if(msg->position_covariance_type == 0) {
         ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: Dropped GPS Update due to position_covariance_type being UNKNOWN");
         doDeadReckoning();
@@ -578,6 +586,8 @@ int main(int argc, char **argv)
     ros::ServiceServer om_emergency_service = n.advertiseService("mower_service/emergency", setEmergencyStop);
     ros::ServiceServer om_gps_service = n.advertiseService("mower_service/set_gps_state", setGpsState);
 
+    // Debug Services
+    ros::ServiceServer mowgli_debug_gpsonoff = n.advertiseService("mowgli_debug/gps_invalid", setDebugGPSInvalid);
     
 
     /*

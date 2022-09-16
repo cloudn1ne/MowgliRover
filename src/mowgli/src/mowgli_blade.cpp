@@ -48,7 +48,7 @@ void mySigintHandler(int sig)
 // state machine to enable/disable blade in mowgli because we need to send keepalives
 // or mowgli will stop the blade after 25secs - service calls are heavy on rosserial - so we only send when needed
 bool setMowEnabled(mower_msgs::MowerControlSrvRequest &req, mower_msgs::MowerControlSrvResponse &res) {
-//    ROS_INFO("mowgli_proxy: setMowEnabled = %d/%d", req.mow_enabled, mowEnabledFlag);
+    ROS_INFO("mowgli_blade: setMowEnabled = %d/%d", req.mow_enabled, mowEnabledFlag);
     // DISABLED -> ENABLED
     if (req.mow_enabled && !mowEnabledFlag)
     {
@@ -61,6 +61,7 @@ bool setMowEnabled(mower_msgs::MowerControlSrvRequest &req, mower_msgs::MowerCon
         ROS_WARN_STREAM("mowgli_blade: Blade ENABLED -> DISABLED");
         sendMowEnabled(false);
     }
+    ROS_INFO("mowgli_blade: setMowEnabled done");
     return true;
 }
 
