@@ -1,1 +1,1 @@
-rosservice call mowgli_debug/gps_invalid '{ data: false }'
+rosrun dynamic_reconfigure dynparam set /mowgli_to_om_proxy debug_gps_invalid false

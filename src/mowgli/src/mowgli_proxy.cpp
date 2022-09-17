@@ -1,4 +1,4 @@
-/*
+ /*
  * Mowgli to OpenMower Proxy V 1.1
  * (c) Georg Swoboda <cn@warp.at> 2022
  *
@@ -118,22 +118,12 @@ ros::Subscriber subEKFOdom;
 ros::ServiceClient mowClient;
 bool mowEmergencyDisableFlag = false;          
 
-// Debug 
-bool debug_gps_invalid = false;
-
-
 // TF
 //tf2_ros::Buffer tfBuffer; 
 //tf::TransformBroadcaster transform_broadcaster;
 //tf2_ros::TransformListener tfListener(tfBuffer);
 //geometry_msgs::TransformStamped transformStamped;
 
-bool setDebugGPSInvalid(std_srvs::SetBool::Request &req,std_srvs::SetBool::Response &res)
-{
-    ROS_INFO_STREAM("mowgli_proxy: setDebugGPSInvalid(" << req.data << ")");
-    debug_gps_invalid = req.data;
-    return true;
-}
 
 bool setGpsState(mower_msgs::GPSControlSrvRequest &req, mower_msgs::GPSControlSrvResponse &res) {    
     ROS_INFO_STREAM("mowgli_proxy: setGpsState =" << gpsEnabled);
@@ -234,7 +224,7 @@ void pubOdometry(double odom_x, double odom_y, double odom_vx, double odom_vr, g
     else
     {
         unsigned int carrSoln = (gps_quality_flags >> 6) & 3;
-        ROS_INFO_DELAYED_THROTTLE(1, "mowgli_proxy: pubOdometry(/odom) [ GPS %s] x = %0.2fm, y = %0.2fm, yaw = %0.2fdeg", (carrSoln==0x2)?"RTK-Fixed":"RTK-Float", odom_x, odom_y, r*180/M_PI);
+        ROS_INFO_DELAYED_THROTTLE(1, "mowgli_proxy: pubOdometry(/odom) [ GPS %s ] x = %0.2fm, y = %0.2fm, yaw = %0.2fdeg", (carrSoln==0x2)?"RTK-Fixed":"RTK-Float", odom_x, odom_y, r*180/M_PI);
     }
     // publish the message
     pubOdom.publish(odom_msg);
@@ -270,7 +260,7 @@ void doDeadReckoning()
 {
     if (!dr_possible)
     {
-        ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: Dead Reckoning requested but we didnt have a recent GPS RTK fix - EKF is not up to date !");
+        ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: Dead Reckoning requested but we dont have a recent GPS RTK fix - EKF is not up to date !");
     }
     else
     {    
@@ -312,6 +302,9 @@ void handleGPSUpdate(tf2::Vector3 gps_pos, double gps_accuracy_m) {
         return;
     }
     
+    // calc base_link coords 
+    double gps_base_link_x = gps_pos.x() - config.gps_antenna_offset * cos(r);
+    double gps_base_link_y = gps_pos.y() - config.gps_antenna_offset * sin(r);
 
     double distance_to_last_gps = (last_gps_pos - gps_pos).length();
 #ifdef MOWGLI_DR_DEBUG    
@@ -320,9 +313,6 @@ void handleGPSUpdate(tf2::Vector3 gps_pos, double gps_accuracy_m) {
     if (distance_to_last_gps <= config.max_distance_to_last_gps_pos) 
     {
         // inlier, we treat it normally
-        // calculate current base_link position from orientation and distance parameter
-        double gps_base_link_x = gps_pos.x() - config.gps_antenna_offset * cos(r);
-        double gps_base_link_y = gps_pos.y() - config.gps_antenna_offset * sin(r);
         //ROS_INFO_DELAYED_THROTTLE(5, "mowgli_proxy: gps_pos.x/y   x = %0.2f y = %0.2f", gps_pos.x(), gps_pos.y());
         //ROS_INFO_DELAYED_THROTTLE(5, "mowgli_proxy: base_link_x/y x = %0.2f y = %0.2f", base_link_x, base_link_y);
 
@@ -352,7 +342,7 @@ void handleGPSUpdate(tf2::Vector3 gps_pos, double gps_accuracy_m) {
     } 
     else 
     {
-        ROS_WARN_STREAM("mowgli_proxy: New GPS data is more than " << config.max_distance_to_last_gps_pos << " away from last fix. The calculated distance was: " << distance_to_last_gps);
+        ROS_WARN_STREAM("mowgli_proxy: New GPS data ( x=" << gps_base_link_x << ", y=" << gps_base_link_y << ") is more than " << config.max_distance_to_last_gps_pos << " away from last fix. The calculated distance was: " << distance_to_last_gps);
         gps_outlier_count++;
         // ~10 sec
         if (gps_outlier_count > 10) 
@@ -373,13 +363,14 @@ void handleGPSUpdate(tf2::Vector3 gps_pos, double gps_accuracy_m) {
     pubOdometry(x,y, vx, vr, mowgli_orientation);
 }
 
+// if DR is active, we just pass on the /mowgli/odom messages as /odom
 void EKFOdomCB(const nav_msgs::Odometry::ConstPtr &msg)
 {
     // ROS_INFO_STREAM("mowgli_proxy: EKFOdomCB");
     if (dr_active)
     {
-        // TODO: vr is taken from EKF, but send the mowgli_orientation 
-        // we should extract the right vr from mowgli_orientation
+        // TODO: vr is taken from EKF, but we send the mowgli_orientation 
+        // we should extract the right vr (msg->twist.twist.angular.z) from mowgli_orientation
 
         //ROS_INFO_STREAM("mowgli_proxy: EKFOdomCB override active");
         pubOdometry(msg->pose.pose.position.x, msg->pose.pose.position.y, msg->twist.twist.linear.x, msg->twist.twist.angular.z, mowgli_orientation);   // pipe EKF /odometry/filtered to -> /odom as is
@@ -466,15 +457,15 @@ void GPSPositionReceivedFixCB(const sensor_msgs::NavSatFix::ConstPtr &msg)
     std::string zone;
     RobotLocalization::NavsatConversions::LLtoUTM(msg->latitude, msg->longitude, n, e, zone);
     tf2::Vector3 gps_pos(
-            (e-datumE), (n-datumN), 0.0
+        (e-datumE), (n-datumN), 0.0
     );
 
     // Debug
-    if (debug_gps_invalid)
+    if (config.debug_gps_invalid)
     {   
-          ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: mowgli_debug/gps_invalid active - faking GPS outage");
-          doDeadReckoning();
-          return;
+        ROS_WARN_STREAM_THROTTLE(1, "mowgli_proxy: mowgli_debug/gps_invalid active - faking GPS outage");
+        doDeadReckoning();
+        return;
     }
 
     if(msg->position_covariance_type == 0) {
@@ -501,6 +492,7 @@ void GPSPositionReceivedFixCB(const sensor_msgs::NavSatFix::ConstPtr &msg)
     {
         gpsOdometryIsRTK = true;
     } 
+
     handleGPSUpdate(gps_pos, acc_m);
 }
 
@@ -585,10 +577,6 @@ int main(int argc, char **argv)
     // Services required by OpenMower
     ros::ServiceServer om_emergency_service = n.advertiseService("mower_service/emergency", setEmergencyStop);
     ros::ServiceServer om_gps_service = n.advertiseService("mower_service/set_gps_state", setGpsState);
-
-    // Debug Services
-    ros::ServiceServer mowgli_debug_gpsonoff = n.advertiseService("mowgli_debug/gps_invalid", setDebugGPSInvalid);
-    
 
     /*
      * GPS (ublox/fix) processing

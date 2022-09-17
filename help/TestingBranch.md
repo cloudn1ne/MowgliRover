@@ -10,5 +10,3 @@ git pull
 ```
 
 Then recompile with ./scripts/build_om.sh
-
-
