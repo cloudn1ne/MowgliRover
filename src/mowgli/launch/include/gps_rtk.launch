@@ -6,13 +6,6 @@
     TAG: b34c
  -->
 <launch>
-    <arg name="serial_port" default="gps"/>
-    <arg name="ntrip_ip" default="10.146.248.20"/>
-    <arg name="ntrip_port" default="2101"/>
-    <arg name="ntrip_endpoint" default="WARP"/>
-    <arg name="ntrip_user" default="ntrip"/>
-    <arg name="ntrip_password" default="command79"/>
-
     <!-- Run the first str2str instance which does the following:
         1. connect to serial port and publish the stream on a local server socket.
         2. Return back all received data to the GPS device.
