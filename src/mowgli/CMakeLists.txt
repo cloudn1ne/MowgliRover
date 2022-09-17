@@ -160,6 +160,7 @@ add_executable(mowgli_blade src/mowgli_blade.cpp)
 
 # make sure we build the status.msg BEFORE we build mowgli_proxy
 add_dependencies(mowgli_proxy mowgli_generate_messages_cpp)
+add_dependencies(mowgli_proxy mowgli_gencfg)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(mowgli_proxy

@@ -18,8 +18,8 @@
         <remap from="/imu/data" to="/imu/data_dr"/> 
  </node>
 
- <!-- EKF -->
+ <!-- EKF used for Dead Reckoning (/odom_dr)  -->
  <rosparam command="load" file="$(find mowgli)/params/ekf.yaml" />
- <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true" />
-
+ <rosparam param="silent_tf_failure">true</rosparam>
+ <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
 </launch>

@@ -12,4 +12,4 @@ cd ~/MowgliRover
 depit
 ```
 
-Then recompile with ./scripts/build_om.sh
+Then recompile with ./scripts/build_all.sh
