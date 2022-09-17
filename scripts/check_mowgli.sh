@@ -1,7 +1,28 @@
 #!/bin/bash
 # Mowgli prereq check script v1.0
 
+declare -a PKGS_REQUIRED=("mowgli" "robot_localization" "mower_msgs" "mower_logic" "mower_map" "slic3r_coverage_planner" "joy" "teleop_twist_joy" "twist_mux" "mbf_costmap_nav" "ublox_gps" "imu_filter_madgwick")
+
+
 echo "" 
+
+###########################################################
+# check if all packages required are installed/compiled
+###########################################################
+echo ">> testing for required ROS packages"
+for i in "${PKGS_REQUIRED[@]}"
+do
+   echo -n "   * checking for ROS Package '$i'"
+   rospack find "$i"  > /dev/null 2>&1
+   if [ $? -ne 0 ]; then
+	echo ""
+	echo "ERROR: ROS package '$i' not found. Either install it (apt-get) or compile (./scripts/build_all.sh)"
+	exit -1
+   else
+	echo " [OK]"
+   fi
+done
+
 
 ###########################################################
 # testing for mowgli_config.sh
