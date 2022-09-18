@@ -3,17 +3,14 @@
  <include file="$(find mowgli)/launch/include/madgwick.launch" />
 
  <!-- GPS with basestation ntrip.warp.at -->
- <include file="$(find mowgli)/launch/include/gps_rtk.launch" />
-
-<!--  <include file="$(find mowgli)/launch/include/gps_warp.launch" /> -->
-<!--  <include file="$(find mowgli)/launch/include/gps_euref.launch" /> --> 
+ <include file="$(find mowgli)/launch/include/gps_rtk_ntrip_client.launch" />
 
  <!-- EKF -->
  <include file="$(find mowgli)/launch/include/ekf.launch" />
 
  <!-- Mowgli/OM to HomeAssistant Proxy -->
- <node pkg="mowgli" type="om_ha_bridge.py" name="om_ha_bridge" output="screen"/>
- <node pkg="mowgli" type="ha_om_bridge.py" name="ha_om_bridge" output="screen"/>
+ <node pkg="mowgli" type="om_ha_bridge.py" name="om_ha_bridge" output="screen" respawn="true"/>
+ <node pkg="mowgli" type="ha_om_bridge.py" name="ha_om_bridge" output="screen" respawn="true"/>
 
  <!-- Mowgli to OM Proxy -->
  <node pkg="mowgli" type="mowgli_proxy" name="mowgli_to_om_proxy" required="true" output="screen">

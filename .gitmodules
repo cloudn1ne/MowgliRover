@@ -5,3 +5,6 @@
 [submodule "src/Mowgli-open_mower_ros"]
 	path = src/Mowgli-open_mower_ros
 	url = https://github.com/cloudn1ne/Mowgli-open_mower_ros.git
+[submodule "src/ntrip_client"]
+	path = src/ntrip_client
+	url = https://github.com/LORD-MicroStrain/ntrip_client.git
