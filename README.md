@@ -18,7 +18,7 @@ If thats not true for your garden have a look at the Testing Branch below.
 
 Latest developments happen in the testing branch. Usually i tried to checkin only versions that work, but bugs can happen.
 
-To checkout the latest 'testing' branch follow [this howto](https://github.com/cloudn1ne/MowgliRover/blob/testing/help/TestingBranch.md) to switch from a Main branch repo to a testing branch.
+To checkout the latest 'testing' branch follow [this howto](https://github.com/cloudn1ne/MowgliRover/blob/testing/help/TestingBranch.md) to switch from a 'main' branch to the 'testing' branch.
 
 Note that the 'testing' branch will have updated ./help documentatin where applicable (dont rely on the 'main' help for 'testing')
 
