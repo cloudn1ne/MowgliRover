@@ -6,7 +6,7 @@ Update subrepos to latest versions whenever you try to run the testing branch
 
 ```
 cd ~/MowgliRover
-git branch testing
+git checkout testing
 git submodule update --init --recursive
 rosdep install --from-paths src --ignore-src -r -y
 ```
