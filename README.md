@@ -6,9 +6,18 @@ The various pieces assume that your build matches https://github.com/cloudn1ne/M
 
 If your build deviates (different IMU, IMU connected to Raspi, etc ..) you will need to adapt the files in this repo.
 
-
 To get started follow the instructions in [here](help/InstallMowgli.md)
 
+## Main Branch (defaul)
+
+The main branch is mostly a 1:1 Mowgli/OM integration and will only work if you have perfect GPS RTK (fix, not float) reception in your garden.
+If thats not true for your garden have a look at the Testing Branch below.
+
+## Testing Branch
+
+Latest developments happen in the testing branch. Usually i tried to checkin only versions that work, but bugs can happen.
+
+To checkout the latest 'testing' branch follow [this howto](https://github.com/cloudn1ne/MowgliRover/blob/testing/help/TestingBranch.md) to switch from a Main branch repo to a testing branch.
 
 ## TODO:
 
