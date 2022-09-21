@@ -23,6 +23,10 @@ bool drive_motor_ctrl_enabled
 uint32 left_encoder_ticks
 uint32 right_encoder_ticks
 
+# motor power (drive motors)
+uint8 left_power
+uint8 right_power
+
 # onboard imu temp
 float32 imu_temp
 
