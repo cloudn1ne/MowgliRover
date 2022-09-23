@@ -33,6 +33,7 @@ echo ""
 ###########################################################
 if [ ! -e "$WS_BASE/.catkin_workspace" ];
 then
+	echo ""
    	echo "ERROR: \$WS_BASE=$WS_BASE is incorrect, please set the right path to the workspace in this script"
    	exit -1
 fi
@@ -43,6 +44,7 @@ fi
 echo ">> checking version compatiblity"
 if [ ! -e "$WS_BASE/VERSION" ];
 then
+	echo ""
 	echo "ERROR: no VERSION file for MowgliRover found"
 	exit -1
 else
@@ -51,6 +53,7 @@ fi
 echo "   * MowgliRover: v$MOWGLIROVER_VERSION"
 if [ ! -e "$WS_BASE/src/Mowgli-open_mower_ros/VERSION" ];
 then
+	echo ""
         echo "ERROR: no VERSION file for Mowgli-open_mower_ros found"
         exit -1
 else
@@ -59,7 +62,15 @@ fi
 echo "   * Mowgli-open_mower_ros: v$MOWGLIOM_VERSION"
 if [ "$MOWGLIOM_VERSION" != "$MOWGLIROVER_VERSION" ];
 then
+	echo ""
 	echo "ERROR: Version mismatch, please make sure you have the latest version of both repos checked out !"
+	echo ""
+	echo "  To checkout the latest version of Mowgli-open_mower_ros use:"
+	echo "  cd $WS_BASE/src/Mowgli-open_mower_ros;git checkout main;git pull"
+	echo ""
+	echo "  To checkout the latest version of MowgliRover use:"
+	echo "  cd $WS_BASE;git pull" 
+  	echo ""
 	exit -1
 else
 	echo "   * VERSION match [OK] !" 
@@ -165,3 +176,4 @@ echo ""
 echo "**************************************"
 echo "* You should be good to run Mowgli ! *"
 echo "**************************************"
+echo ""
