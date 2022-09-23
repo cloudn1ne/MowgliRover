@@ -71,6 +71,7 @@ then
 	echo "  To checkout the latest version of MowgliRover use:"
 	echo "  cd $WS_BASE;git pull" 
   	echo ""
+	echo "  Do not forget to recompile your code ./scripts/build_all.sh after updating the repos !"
 	exit -1
 else
 	echo "   * VERSION match [OK] !" 
