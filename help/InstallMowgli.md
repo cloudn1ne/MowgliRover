@@ -149,7 +149,7 @@ cd ~/MowgliRover/scripts
 
 Your YF mainbord needs to run https://github.com/cloudn1ne/Mowgli/tree/main/stm32/ros_usbnode
 
-**You need to run a version released after 10th Sept 2022 as only those will include the required srvs and topics !!!) - it will not work with an older version **
+**You need to run a version released after 20th Sept 2022 as only those will include the required srvs and topics !!!) - it will not work with an older version **
 
 In general its a good idea to update Mowgli (stm32) whenever there is a new release because some feature enhancements on MowgliRover will need new stm32 code (or fixes there). Hopefully a version system will soon be working that will tell you that your Mowgli (stm32) is too old when running MowgliRover.
 
