@@ -9,16 +9,13 @@ declare -a PKGS_REQUIRED=("mowgli" "robot_localization" "mower_msgs" "mower_logi
 
 check_compatibility()
 {
-	if [ "$MOWGLIROVER_VERSION" == "0.9.1" ];
+	MINVER="1.0.0"
+	if [[ "$MOWGLI_VER" < "$MINVER" ]]; 
 	then
-		MINVER="1.0.0"
-		if [[ "$MOWGLI_VER" < "$MINVER" ]]; 
-		then
-			echo ""
-			echo "ERROR: You version of Mowgli ($MOWGLI_VER) is not supported by MowgliRover, you need at least v$MINVER"
-			echo "       Please update your STM32 code !"
-			exit -1
-		fi
+		echo ""
+		echo "ERROR: You version of Mowgli(stm32) (v$MOWGLI_VER) is not supported by MowgliRover, you need at least v$MINVER"
+		echo "       Please update your STM32 code !"
+		exit -1
 	fi
 	echo "   * VERSION match [OK] !"
 }
