@@ -136,16 +136,13 @@ depit
 source ~/.bashrc
 ```
 
-### Build Mowgli, OM and RTKLIBs strstr
+### Build Mowgli, OM, RobotLocalization, ...
 
 Note: Create a swap file around 4G in size if you have less than 4G memory or compiles will fail (and take ages). I managed to (test) compile this on a Raspi3 that way, but i have not actually tried to run it with a real bot.
 
 ```
 cd ~/MowgliRover/scripts
-./build_strstr.sh
-./build_usbreset.sh
-./build_om.sh
-./build_mowgli.sh
+./build_all.sh
 ```
 
 ## Plugin the YF Mainboard with Mowgli usbnode installed via USB
