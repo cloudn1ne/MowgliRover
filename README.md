@@ -15,7 +15,7 @@ Latest developments happen in the testing branch. Usually i tried to checkin onl
 
 To checkout the latest 'testing' branch follow [this howto](https://github.com/cloudn1ne/MowgliRover/blob/testing/help/TestingBranch.md) to switch from a 'main' branch to the 'testing' branch.
 
-Note that the 'testing' branch will have updated ./help documentatin where applicable (dont rely on the 'main' help for 'testing')
+Note that the 'testing' branch will have updated ./help documentation where applicable.
 
 ## TODO:
 
