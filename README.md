@@ -23,6 +23,13 @@ Note that the 'testing' branch will have updated ./help documentation where appl
 The legacy branch is the inital commit that is mostly compatible with a default openmower_ros installation as of Aug/Sept 2022.
 It requires perfect GPS-RTK reception.
 
+## Known deficiencies:
+
+  * PAUSE/CONTINUE only works when in Mowing behaviour, not during Docking or Undocking or AreaRecording - so you need RTK GPS during those phases or weird stuff can     happen.
+  * rosserial_python sometimes crashes which is noticeable when the bot loses orientation (the IMU topic update rate is too low) - It seems to be a buffering problem that can be fixed by killing the rosserial process on the raspi, which will get restarted by the watchdog process again. Root cause needs to be checked - it happens infrequently usualy after long uptimes.
+  * There are no recovery behaviours - if the bot goes into PAUSE mode because of lack of GPS Quality it will sit there potentially until battery runs out. However i have never had it sit for more than 20mins, usually a RTK fix comes back that allows to drive on. Your mileage may vary by GPS quality ;)
+ 
+
 ## TODO:
 
 * Display GPS-RTK Fix (Quality ?) with YF status Leds during Map Recording, slow down robot if quality diminishes ?
