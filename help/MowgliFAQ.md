@@ -60,3 +60,13 @@ Mowgli (while mowing) had a GPS RTK fix, but then lost it - Dead Reckoning (DR) 
 ````
 
 Mowgli was paused for 217 seconds, and then a GPS RTK Fixed (not the GPS RTK-Float !) was re-aquired, which after 5 successfull messages will make Mowgli CONTINUE on its mow path. Note that the pubOdometry messages only how every second (but GPS messages arrive at 10Hz)
+
+
+```
+[WARN] [1664058663.218971]: Found packet, but checksums didn't match
+[WARN] [1664058663.223441]: Expected Checksum: 0xE80C05
+[WARN] [1664058663.228792]: Actual Checksum:   0x556933
+```
+
+The ntrip_client encountered a RTCM frame with an invalid checksum - should happen only occasionally - no impact afaik
+
