@@ -7,6 +7,7 @@ The various pieces assume that your build matches https://github.com/cloudn1ne/M
 If your build deviates (different IMU, IMU connected to Raspi, etc ..) you will need to adapt the files in this repo.
 
 No matter if you use the Main or Testing branch you will need to install ROS and setup the environment prereqs.
+
 To get started follow the instructions in [here](help/InstallMowgli.md)
 
 ## Testing Branch
@@ -16,6 +17,11 @@ Latest developments happen in the testing branch. Usually i tried to checkin onl
 To checkout the latest 'testing' branch follow [this howto](https://github.com/cloudn1ne/MowgliRover/blob/testing/help/TestingBranch.md) to switch from a 'main' branch to the 'testing' branch.
 
 Note that the 'testing' branch will have updated ./help documentation where applicable.
+
+## Legacy Branch
+
+The legacy branch is the inital commit that is mostly compatible with a default openmower_ros installation as of Aug/Sept 2022.
+It requires perfect GPS-RTK reception.
 
 ## TODO:
 
