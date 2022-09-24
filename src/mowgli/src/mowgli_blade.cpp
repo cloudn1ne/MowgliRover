@@ -45,22 +45,26 @@ void mySigintHandler(int sig)
 }
 
 
-// state machine to enable/disable blade in mowgli because we need to send keepalives
-// or mowgli will stop the blade after 25secs - service calls are heavy on rosserial - so we only send when needed
+/// @brief state machine to enable/disable blade in mowgli because we need to send keepalives
+/// @param req service request data
+/// @param res service response data
+/// @return always true
 bool setMowEnabled(mower_msgs::MowerControlSrvRequest &req, mower_msgs::MowerControlSrvResponse &res) {
-//    ROS_INFO("mowgli_proxy: setMowEnabled = %d/%d", req.mow_enabled, mowEnabledFlag);
+    ros::Time started = ros::Time::now();
+    ROS_WARN("#### mowgli_blade: setMowEnabled call = (%d to %d)", mowEnabledFlag, req.mow_enabled);
     // DISABLED -> ENABLED
     if (req.mow_enabled && !mowEnabledFlag)
     {
-        ROS_WARN_STREAM("mowgli_blade: Blade DISABLED -> ENABLED");
+        ROS_WARN_STREAM("#### mowgli_blade: Blade DISABLED -> ENABLED");
         sendMowEnabled(true);
     }        
     // ENABLED -> DISABLED
     else if (!req.mow_enabled && mowEnabledFlag)
     {
-        ROS_WARN_STREAM("mowgli_blade: Blade ENABLED -> DISABLED");
+        ROS_WARN_STREAM("#### mowgli_blade: Blade ENABLED -> DISABLED");
         sendMowEnabled(false);
     }
+    ROS_WARN_STREAM("#### mowgli_blade: setMowEnabled call completed" << mowEnabledFlag << ") call completed within " << (ros::Time::now()-started).toSec() << "s");
     return true;
 }
 
@@ -91,14 +95,17 @@ int main(int argc, char **argv)
     }
 
     // blocking loop to send out sendMowEnabled() messages to mowgli as
-    // the blade motor times out after 25sec
-    ros::Duration duration(20.0);
+    // the blade motor times out after 25sec we refresh the state every 20sec 
+    ros::Time last_keepalive_time = ros::Time::now();
+    ros::Rate r(0.5); // ROS loop rate
     while (ros::ok()) {
-        if (mowEnabledFlag)
+        if (mowEnabledFlag && (ros::Time::now()-last_keepalive_time).toSec() > 20.0) // if BLADE motor should be on we send out keepalives every 20s
         {
+            ROS_WARN("mowgli_blade: sendMowEnabled(%d) 20sec keepalive", mowEnabledFlag);
             sendMowEnabled(mowEnabledFlag);
+            last_keepalive_time = ros::Time::now();
         }
-        duration.sleep();
+        r.sleep();
         ros::spinOnce(); 
     }
     return 0;

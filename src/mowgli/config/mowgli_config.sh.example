@@ -13,8 +13,11 @@ export MOWGLI_IMU_OFFSET=-90.0
 export MOWGLI_DATUM_LAT=48.123
 export MOWGLI_DATUM_LONG=16.123
 export MOWGLI_GPS_FILTER_FACTOR=1.0
-export MOWGLI_DR_MAX_DURATION_SEC=20
 export MOWGLI_MAX_DISTANCE_TO_LAST_GPS_POS=0.10 
+export MOWGLI_GPSRTK_FIX_REQUIRED=false
+# DR settings
+export MOWGLI_DR_MAX_DURATION_SEC=20
+export MOWGLI_DR_UPDATE_INTERVAL=1.0
 
 ################################
 ##     NTRIP Settings         ##
@@ -39,6 +42,9 @@ export OM_GPS_TIMEOUT_SEC=3.0
 
 # Mowing Behavior Settings (needs to be true to enable Blade Motor)
 export OM_ENABLE_MOWER=true
+
+# Ignore GPS errors (we handle that in mowgli_proxy)
+export OM_IGNORE_GPS_ERRORS=true
 
 # Mow/Docking settings
 export OM_AUTOMATIC_START=false

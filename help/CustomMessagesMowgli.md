@@ -1,8 +1,8 @@
 # Compile custom mowgli messages for rosserial
 
 ```
-cd ~/MowgliRoverROS/
+cd ~/MowgliRover/
 rosrun rosserial_arduino make_libraries.py libraries/ mowgli
 ```
-Output: ~/MowgliRoverROS/libraries/ros_lib/mowgli
+Output: ~/MowgliRover/libraries/ros_lib/mowgli
 

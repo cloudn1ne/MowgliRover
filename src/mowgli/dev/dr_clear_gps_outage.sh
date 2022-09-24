@@ -1,0 +1,1 @@
+rosrun dynamic_reconfigure dynparam set /mowgli_to_om_proxy debug_gps_invalid false

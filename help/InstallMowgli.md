@@ -48,6 +48,7 @@ sudo apt -y remove --autoremove snapd
 ```
 sudo apt-get update
 sudo apt-get -y upgrade
+sudo apt-get -y install curl git
 ```
 
 ## Install ROS noetic -> http://wiki.ros.org/noetic/Installation/Ubuntu
@@ -77,7 +78,7 @@ echo "source ~/MowgliRover/devel/setup.bash" >> ~/.bashrc
 ### Install ROS packages and other good stuff that Mowgli and OM will need
 
 ```
-sudo apt-get -y install g++ cpp cmake ros-noetic-tf2-eigen ros-noetic-teleop-twist-keyboard ros-noetic-robot-state-publisher ros-noetic-joint-state-publisher ros-noetic-map-server ros-noetic-rosserial-server ros-noetic-gps-common picocom libraspberrypi-bin  ros-noetic-tf2-geometry-msgs ros-noetic-robot-localization libraspberrypi-dev libraspberrypi0 libpigpiod-if-dev wavemon ros-noetic-rosserial-arduino python3-paho-mqtt openocd python3-rosdep
+sudo apt-get -y install g++ cpp cmake ros-noetic-tf2-eigen ros-noetic-teleop-twist-keyboard ros-noetic-robot-state-publisher ros-noetic-joint-state-publisher ros-noetic-map-server ros-noetic-rosserial-server ros-noetic-gps-common picocom libraspberrypi-bin  ros-noetic-tf2-geometry-msgs ros-noetic-robot-localization libraspberrypi-dev libraspberrypi0 libpigpiod-if-dev wavemon ros-noetic-rosserial-arduino python3-paho-mqtt openocd python3-rosdep ros-noetic-rtcm-msgs
 ```
 
 ### Add some alias helpers to \~/.bashrc

@@ -23,6 +23,17 @@ bool drive_motor_ctrl_enabled
 uint32 left_encoder_ticks
 uint32 right_encoder_ticks
 
+# motor power (drive motors)
+uint8 left_power
+uint8 right_power
+
 # onboard imu temp
 float32 imu_temp
 
+# hardware flags
+bool blade_motor_enabled
+
+# Mowgli STM32 firmware version (<major>.<branch>.<minor>)
+uint8 sw_ver_maj
+uint8 sw_ver_bra
+uint8 sw_ver_min
