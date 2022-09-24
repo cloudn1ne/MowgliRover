@@ -1,6 +1,6 @@
 **Note that this branch is no longer under devleopment - its preserved here because it is compatible with OpenMower_ROS versions as of Aug/Sep 2022**
 
-# MowgliRover (legcy)
+# MowgliRover (leagcy)
 
 This repo holds the Mowgli/OM files that need to be deployed onto your Raspi.
 
