@@ -17,9 +17,13 @@ Position the Bot and follow this sequence - more details are in the discord chan
  X (2nd) set stop point (shoule be docking_distance away from charge prongs)
  Y save area after (2nd X)
 
-## Existing AREA_RECORDING mode
+## Exiting AREA_RECORDING mode
 
 After you have recorded your map, either restart Mowgli or press the HOME button (via script 'press_home.sh', or HA)
+
+## GPS Quality
+
+The "Monday" LED is illuminated when there is a proper GPS RTK Fix (not Float) - if the status changes Mowgli will chirp. You should not attempt to record a map if you dont have the LED illuminated and thus a proper GPS RTK Fix.
 
 ## Docking Tips
 
