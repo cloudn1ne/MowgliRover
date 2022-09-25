@@ -1,4 +1,24 @@
+```
+[527576.920668] usb 1-1.3: reset full-speed USB device number 119 using xhci_hcd
+[527576.920867] usb 1-1.3: Device not responding to setup address.
+[527577.128810] usb 1-1.3: Device not responding to setup address.
+[527577.336642] usb 1-1.3: device not accepting address 119, error -71
+[527577.345155] usb 1-1.3: USB disconnect, device number 119
+[527577.428816] usb 1-1.3: new full-speed USB device number 121 using xhci_hcd
+[527577.508825] usb 1-1.3: device descriptor read/64, error -32
+[527577.700900] usb 1-1.3: device descriptor read/64, error -32
+[527577.896651] usb 1-1.3: new full-speed USB device number 122 using xhci_hcd
+[527577.980869] usb 1-1.3: device descriptor read/64, error -32
+[527578.172831] usb 1-1.3: device descriptor read/64, error -32
+```
 
+USB errors in syslog, and Mowgli no longer emitting ROS topics - can happen during flashing.
+
+Reset the USBHub with 
+
+```
+sudo /usr/bin/usbreset "USB2.0 Hub"
+```
 
 ```
 [ WARN] [1664017729.750420769]: Costmap2DROS transform timeout. Current time: 1664017729.7503, global_pose stamp: 1664017578.3951, tolerance: 0.3000
