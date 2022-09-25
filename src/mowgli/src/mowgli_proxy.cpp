@@ -69,7 +69,6 @@ bool gpsEnabled = true;
 bool hasImuMessage = false;
 geometry_msgs::Quaternion mowgli_orientation;
 
-
 // ODOM
 double x = 0, y = 0, r = 0;
 double vx = 0, vy = 0, vr = 0;
@@ -116,7 +115,7 @@ ros::Subscriber subEKFOdom;
 
 // Service Clients
 ros::ServiceClient mowClient;
-bool mowEmergencyDisableFlag = false;          
+bool mowEmergencyDisableFlag = false;
 
 // TF
 //tf2_ros::Buffer tfBuffer; 
@@ -172,8 +171,11 @@ void pubOdometry(double odom_x, double odom_y, double odom_vx, double odom_vr, g
     odom_trans.transform.rotation = orientation;
     transform_broadcaster.sendTransform(odom_trans);
 
+
+
     // next, we'll publish the odometry message over ROS
     nav_msgs::Odometry odom_msg;
+
     odom_msg.header.stamp = current_time;
     odom_msg.header.frame_id = "map";
     odom_msg.child_frame_id = "base_link";
@@ -203,7 +205,7 @@ void pubOdometry(double odom_x, double odom_y, double odom_vx, double odom_vr, g
         odom_msg.pose.covariance[0] = last_gps_acc_m * last_gps_acc_m;
         odom_msg.pose.covariance[7] = last_gps_acc_m * last_gps_acc_m;
     }
-   
+
     odom_msg.twist.covariance = {
             0.000001, 0.0, 0.0, 0.0, 0.0, 0.0,
             0.0, 0.000001, 0.0, 0.0, 0.0, 0.0,
@@ -228,6 +230,7 @@ void pubOdometry(double odom_x, double odom_y, double odom_vx, double odom_vr, g
     }
     // publish the message
     pubOdom.publish(odom_msg);
+
 }
 
 /*
@@ -382,6 +385,7 @@ void MowgliOdomCB(const nav_msgs::Odometry::ConstPtr &msg)
 #ifdef MOWGLI_DEBUG    
     ROS_INFO_STREAM("mowgli_proxy: MowgliOdomCB");
 #endif
+
 /*
     dr_x = msg->pose.pose.position.x;
     dr_y = msg->pose.pose.position.y;
@@ -414,6 +418,7 @@ void MowgliStatusCB(const mowgli::status::ConstPtr &msg)
     ROS_INFO_STREAM("mowgli_proxy: MowgliStatusCB");
 #endif    
 
+    
     om_mower_status.v_battery = msg->v_battery;
     om_mower_status.v_charge = msg->v_charge;
     om_mower_status.charge_current = msg->i_charge;
@@ -577,6 +582,7 @@ int main(int argc, char **argv)
     // Services required by OpenMower
     ros::ServiceServer om_emergency_service = n.advertiseService("mower_service/emergency", setEmergencyStop);
     ros::ServiceServer om_gps_service = n.advertiseService("mower_service/set_gps_state", setGpsState);
+
 
     /*
      * GPS (ublox/fix) processing

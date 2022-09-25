@@ -15,10 +15,11 @@ find_package(catkin REQUIRED COMPONENTS
 	std_msgs
 	geometry_msgs
 	message_generation
-  	tf2
+  tf2
 	tf2_geometry_msgs
 	tf2_ros
 	robot_localization
+  behaviortree_cpp_v3
 )
 
 # Geographiclib installs FindGeographicLib.cmake to this non-standard location
@@ -145,8 +146,10 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/mowgli_node.cpp)
 
+add_executable(mowgli_bt src/mowgli_bt.cpp src/bt/bt_nodes.cpp)
 add_executable(mowgli_proxy src/mowgli_proxy.cpp)
 add_executable(mowgli_blade src/mowgli_blade.cpp)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -169,6 +172,10 @@ target_link_libraries(mowgli_proxy
 
 target_link_libraries(mowgli_blade
    ${catkin_LIBRARIES}
+)
+
+target_link_libraries(mowgli_bt
+   ${catkin_LIBRARIES}   
 )
 #############
 ## Install ##

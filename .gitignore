@@ -1,6 +1,7 @@
 devel/
 logs/
 build/
+build-clion/
 bin/
 msg_gen/
 srv_gen/
@@ -16,3 +17,6 @@ libraries/
 # Mowgli Config files
 mowgli_config.sh
 bridge.conf
+
+# other .gitignores
+*/.gitignore

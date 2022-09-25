@@ -1,15 +1,17 @@
 #!/bin/bash
-# Mowgli prereq check script v1.0
+# Mowgli prereq check script v1.1
+# v1.1 added behaviortree_cpp_v3
+
 
 
 WS_BASE=~/MowgliRover
-declare -a PKGS_REQUIRED=("mowgli" "robot_localization" "mower_msgs" "mower_logic" "mower_map" "slic3r_coverage_planner" "joy" "teleop_twist_joy" "twist_mux" "mbf_costmap_nav" "ublox_gps" "imu_filter_madgwick")
+declare -a PKGS_REQUIRED=("mowgli" "robot_localization" "mower_msgs" "mower_logic" "mower_map" "slic3r_coverage_planner" "joy" "teleop_twist_joy" "twist_mux" "mbf_costmap_nav" "ublox_gps" "imu_filter_madgwick" "behaviortree_cpp_v3")
 
 ### COMPATIBLITY MATRIX (stm32 vs mowglirover)
 
 check_compatibility()
 {
-	MINVER="1.0.0"
+	MINVER="1.0.1"
 	if [[ "$MOWGLI_VER" < "$MINVER" ]]; 
 	then
 		echo ""
