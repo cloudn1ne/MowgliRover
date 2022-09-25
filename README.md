@@ -32,7 +32,7 @@ It requires perfect GPS-RTK reception.
 
 ## TODO:
 
-* Display GPS-RTK Fix (Quality ?) with YF status Leds during Map Recording, slow down robot if quality diminishes ?
+* ~~Display GPS-RTK Fix (Quality ?) with YF status Leds during Map Recording, slow down robot if quality diminishes ?~~
 * ~~Improve Dead Reckoning, more testing is needed (sharp turns vs. straight ahead driving)~~ 
 * FTC PID values, currently only P is used, ID might be helpful on rougher surfaces
 * Include patched FTC controller in this repo (better debugging if it fails)
