@@ -9,7 +9,7 @@ declare -a PKGS_REQUIRED=("mowgli" "robot_localization" "mower_msgs" "mower_logi
 
 check_compatibility()
 {
-	MINVER="1.0.0"
+	MINVER="1.0.1"
 	if [[ "$MOWGLI_VER" < "$MINVER" ]]; 
 	then
 		echo ""
