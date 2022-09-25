@@ -1,0 +1,7 @@
+uint8 LED_4H=1 
+uint8 LED_6H=2
+uint8 LED_8H=3
+uint8 LED_10H=4
+
+uint8 led
+---
