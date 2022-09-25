@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "installing USB reset"
+sudo cp ./usbreset/usbreset /usr/bin/usbreset
+sudo chmod +x /usr/bin/usbreset
+
 echo "installing UDEV rules"
 sudo cp 50-mowgli.rules /etc/udev/rules.d
 echo "restarting UDEV"

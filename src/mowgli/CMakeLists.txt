@@ -67,6 +67,7 @@ add_message_files(
    FILES
    SetCfg.srv
    GetCfg.srv
+   Led.srv
 )
 
 ## Generate actions in the 'action' folder

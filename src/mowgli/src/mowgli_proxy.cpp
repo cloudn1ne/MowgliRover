@@ -23,7 +23,7 @@
 #include "std_srvs/SetBool.h"
 #include <mowgli/MowgliProxyConfig.h>
 #include <mowgli/status.h>
-
+#include <mowgli/Led.h>
 
 /* GPS/ODOM */
 #include <nav_msgs/Odometry.h>
@@ -73,6 +73,11 @@ geometry_msgs::Quaternion mowgli_orientation;
 double x = 0, y = 0, r = 0;
 double vx = 0, vy = 0, vr = 0;
 double delta_x = 0, delta_y = 0;
+
+// LED
+bool led_gpsOdometryIsRTK_state_old = false;
+ros::ServiceClient ledSetClient;
+ros::ServiceClient ledClrClient;
 
 // Mowgli ODOM (Dead Reckoning)
 // double dr_x_offset = 0, dr_y_offset = 0;        // offset (between RTK and Mowgli Odom) is updated with every valid RTK fix
@@ -434,6 +439,31 @@ void MowgliStatusCB(const mowgli::status::ConstPtr &msg)
 //    dr_left_encoder_ticks = msg->left_encoder_ticks;
 //    dr_right_encoder_ticks = msg->right_encoder_ticks;
 
+    if (msg->v_charge < 10.0)
+    {
+	if (led_gpsOdometryIsRTK_state_old != gpsOdometryIsRTK)
+	{
+	   mowgli::Led ledsrv;
+
+	   if (gpsOdometryIsRTK)
+	   {
+		// set
+                ledsrv.request.led = 139;
+                ledSetClient.call(ledsrv);	
+		ROS_WARN("GPS Fix LED turned on");
+	   }
+	   else
+           {
+		// clear 
+	        ledsrv.request.led = 139;
+                ledClrClient.call(ledsrv);	
+		ROS_WARN("GPS Fix LED turned off");
+	   }
+
+	}
+
+    }
+    led_gpsOdometryIsRTK_state_old = gpsOdometryIsRTK;
     pubOMStatus.publish(om_mower_status);
 }
 
@@ -583,6 +613,23 @@ int main(int argc, char **argv)
     ros::ServiceServer om_emergency_service = n.advertiseService("mower_service/emergency", setEmergencyStop);
     ros::ServiceServer om_gps_service = n.advertiseService("mower_service/set_gps_state", setGpsState);
 
+    // Led Control
+    ledSetClient = n.serviceClient<mowgli::Led>("mowgli/SetLed");
+    ROS_INFO("mowgli_proxy: Waiting for mowgli/SetLed server");
+    if (!ledSetClient.waitForExistence(ros::Duration(60.0, 0.0))) {
+        ROS_ERROR("mowgli_proxy: SetLed server service not found.");
+        return 1;
+    }
+    ledClrClient = n.serviceClient<mowgli::Led>("mowgli/ClrLed");
+    ROS_INFO("mowgli_proxy: Waiting for mowgli/ClrLed server");
+    if (!ledClrClient.waitForExistence(ros::Duration(60.0, 0.0))) {
+        ROS_ERROR("mowgli_proxy: ClrLed server service not found.");
+        return 1;
+    }
+    // turn all LEDs off
+    mowgli::Led ledsrv;
+    ledsrv.request.led = 139;
+    ledClrClient.call(ledsrv);
 
     /*
      * GPS (ublox/fix) processing

@@ -154,7 +154,7 @@ Your YF mainbord needs to run https://github.com/cloudn1ne/Mowgli/tree/main/stm3
 In general its a good idea to update Mowgli (stm32) whenever there is a new release because some feature enhancements on MowgliRover will need new stm32 code (or fixes there). Hopefully a version system will soon be working that will tell you that your Mowgli (stm32) is too old when running MowgliRover.
 
 See https://github.com/cloudn1ne/Mowgli for more information how to do that.
-
+```
 ### Install the roscore and rosserial service scripts
 
 ```
@@ -162,9 +162,7 @@ cd ~/MowgliRover/scripts/systemctl
 ./install.sh
 ```
 
-The rosserial script's usbreset expects Mowgli to be connected to /dev/bus/usb/001/002
-
-If thats not the case (check with lsusb) you need to adjust those values. This ensures that rosserial recovers from a reboot/reflash of Mowgli automatically.
+usbreset will be installed as /usr/bin/usbreset - which is used to reset Mowgli in case of a reflash, or other connection errors (rosserial_watchdog)
 
 
 ## Remove some useless stuff to lighten the load on the Raspi
