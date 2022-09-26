@@ -103,6 +103,9 @@ CATKIN_SHELL=bash
 
 ## Installing Mowgli, OpenMower and dependencies
 
+### Create empty ROS workspace for MowgliRover
+
+
 ### Clone MowgliRover Repo
 
 ```
@@ -113,11 +116,29 @@ git clone https://github.com/cloudn1ne/MowgliRover.git
 ### Make catkin_workspace (in ~/MowgliRover), Clone submodules for MowgliRover
 
 ```
-. /opt/ros/noetic/setup.bash
 cd ~/MowgliRover/
-catkin_make
+. /opt/ros/noetic/setup.bash
+catkin_make --pkg none
+```
+Output will be 
+
+```
+Base path: /home/test/MowgliRover
+Source space: /home/test/MowgliRover/src
+Build space: /home/test/MowgliRover/build
+Devel space: /home/test/MowgliRover/devel
+Install space: /home/test/MowgliRover/install
+Packages "none" not found in the workspace
+```
+You can ignore the "Packages none not found" ...
+
+### Now checkout all the subrepos
+
+```
+cd ~/MowgliRover/
 git submodule update --init --recursive
 ```
+
 
 ### Source your setup.bash files
 
