@@ -116,7 +116,6 @@ git clone https://github.com/cloudn1ne/MowgliRover.git
 cd ~/MowgliRover/
 . /opt/ros/noetic/setup.bash
 git submodule update --init --recursive
-catkin_make
 ```
 
 ### Install ROS dependencies
@@ -134,6 +133,13 @@ Note: Create a swap file around 4G in size if you have less than 4G memory or co
 
 ```
 ./scripts/build_all.sh
+```
+## Login again to source your ~/.bashrc 
+
+or run
+
+```
+. ~/.bashrc 
 ```
 
 ## Plugin the YF Mainboard with Mowgli usbnode installed via USB
