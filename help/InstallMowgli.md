@@ -115,33 +115,8 @@ git clone https://github.com/cloudn1ne/MowgliRover.git
 ```
 cd ~/MowgliRover/
 . /opt/ros/noetic/setup.bash
-catkin_make --pkg none
-```
-Output will be 
-
-```
-Base path: /home/test/MowgliRover
-Source space: /home/test/MowgliRover/src
-Build space: /home/test/MowgliRover/build
-Devel space: /home/test/MowgliRover/devel
-Install space: /home/test/MowgliRover/install
-Packages "none" not found in the workspace
-```
-You can ignore the "Packages none not found" ...
-
-### Now checkout all the subrepos
-
-```
-cd ~/MowgliRover/
 git submodule update --init --recursive
-```
-
-
-### Source your setup.bash files
-
-```
-source ~/.bashrc
-```
+catkin_make
 
 ### Install ROS dependencies
 
@@ -149,7 +124,7 @@ source ~/.bashrc
 cd ~/MowgliRover/
 sudo rosdep init
 rosdep update
-depit
+rosdep install --from-paths src --ignore-src -r -y
 ```
 
 ### Build Mowgli, OM, RobotLocalization, ...
@@ -157,8 +132,7 @@ depit
 Note: Create a swap file around 4G in size if you have less than 4G memory or compiles will fail (and take ages). I managed to (test) compile this on a Raspi3 that way, but i have not actually tried to run it with a real bot.
 
 ```
-cd ~/MowgliRover/scripts
-./build_all.sh
+./scripts/build_all.sh
 ```
 
 ## Plugin the YF Mainboard with Mowgli usbnode installed via USB
