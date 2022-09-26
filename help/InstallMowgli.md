@@ -117,6 +117,7 @@ cd ~/MowgliRover/
 . /opt/ros/noetic/setup.bash
 git submodule update --init --recursive
 catkin_make
+```
 
 ### Install ROS dependencies
 
