@@ -68,6 +68,69 @@ class SaySomething : public BT::SyncActionNode
 //Same as class SaySomething, but to be registered with SimpleActionNode
 NodeStatus SaySomethingSimple(BT::TreeNode& self);
 
+// Example of custom SyncActionNode (synchronous action)
+// with an input port.
+class SayFloat : public BT::SyncActionNode
+{
+  public:
+    SayFloat(const std::string& name, const BT::NodeConfiguration& config)
+      : BT::SyncActionNode(name, config)
+    {
+    }
+
+    // You must override the virtual function tick()
+    NodeStatus tick() override;
+
+    // It is mandatory to define this static method.
+    static BT::PortsList providedPorts()
+    {
+        return{ BT::InputPort<float>("message") };
+    }
+};
+
+// Example of custom SyncActionNode (synchronous action)
+// with an input port.
+class SayInt : public BT::SyncActionNode
+{
+  public:
+    SayInt(const std::string& name, const BT::NodeConfiguration& config)
+      : BT::SyncActionNode(name, config)
+    {
+    }
+
+    // You must override the virtual function tick()
+    NodeStatus tick() override;
+
+    // It is mandatory to define this static method.
+    static BT::PortsList providedPorts()
+    {
+        return{ BT::InputPort<int>("message") };
+    }
+};
+
+
+// Example of custom SyncActionNode (synchronous action)
+// with an input port.
+class SayBool : public BT::SyncActionNode
+{
+  public:
+    SayBool(const std::string& name, const BT::NodeConfiguration& config)
+      : BT::SyncActionNode(name, config)
+    {
+    }
+
+    // You must override the virtual function tick()
+    NodeStatus tick() override;
+
+    // It is mandatory to define this static method.
+    static BT::PortsList providedPorts()
+    {
+        return{ BT::InputPort<bool>("message") };
+    }
+};
+
+
+
 // Example os Asynchronous node that use StatefulActionNode as base class
 class SleepNode : public BT::StatefulActionNode
 {

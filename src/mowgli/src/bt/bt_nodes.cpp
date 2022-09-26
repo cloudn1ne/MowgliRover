@@ -72,4 +72,40 @@ BT::NodeStatus SaySomethingSimple(BT::TreeNode &self)
     return BT::NodeStatus::SUCCESS;
 }
 
+BT::NodeStatus SayFloat::tick()
+{
+    auto msg = getInput<float>("message");
+    if (!msg)
+    {
+        throw BT::RuntimeError( "missing required input [message]: ", msg.error() );
+    }
+
+    std::cout << "Robot says: " << msg.value() << std::endl;
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::NodeStatus SayInt::tick()
+{
+    auto msg = getInput<int>("message");
+    if (!msg)
+    {
+        throw BT::RuntimeError( "missing required input [message]: ", msg.error() );
+    }
+
+    std::cout << "Robot says: " << msg.value() << std::endl;
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::NodeStatus SayBool::tick()
+{
+    auto msg = getInput<bool>("message");
+    if (!msg)
+    {
+        throw BT::RuntimeError( "missing required input [message]: ", msg.error() );
+    }
+
+    std::cout << "Robot says: " << (msg.value()?"TRUE":"FALSE") << std::endl;
+    return BT::NodeStatus::SUCCESS;
+}
+
 }

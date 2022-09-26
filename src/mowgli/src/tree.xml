@@ -1,11 +1,18 @@
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <CheckBattery   name="check_battery"/>
+            <GetMowerBatteryVoltage out="{vbat}" />            
+            <SayFloat       message="{vbat}" />
+            <MowControl     enable="0"/>
+            <!-- <GpsControl     enable="1"/> -->
+            <GetMowerBladeState out="{blade_motor_enabled}"/>            
+            <SayBool        message="{blade_motor_enabled}" />
+
+          <!--  <CheckBattery   name="check_battery"/>
             <CheckBattery   name="check_battery"/>
             <OpenGripper    name="open_gripper"/>
             <ApproachObject name="approach_object"/>
-            <CloseGripper   name="close_gripper"/>
+            <CloseGripper   name="close_gripper"/>   -->          
         </Sequence>
      </BehaviorTree>
  </root>

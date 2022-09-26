@@ -1,0 +1,20 @@
+<launch>
+ <!-- Mowgli to OM Proxy -->
+ <node pkg="mowgli" type="mowgli_proxy" name="mowgli_to_om_proxy" required="true" output="screen">
+    <param name="datum_lat" value="$(env MOWGLI_DATUM_LAT)"/>   
+    <param name="datum_long" value="$(env MOWGLI_DATUM_LONG)" />
+    <param name="imu_offset" value="$(env MOWGLI_IMU_OFFSET)" />
+    <param name="gps_filter_factor" value="$(env MOWGLI_GPS_FILTER_FACTOR)" />
+    <param name="gps_antenna_offset" value="$(env MOWGLI_GPS_ANTENNA_OFFSET)" />
+    <param name="dr_max_duration_sec" value="$(env MOWGLI_DR_MAX_DURATION_SEC)" />
+    <param name="dr_update_interval" value="$(env MOWGLI_DR_UPDATE_INTERVAL)" />
+    <param name="max_distance_to_last_gps_pos" value="$(env MOWGLI_MAX_DISTANCE_TO_LAST_GPS_POS)" />
+    <param name="gpsrtk_fix_required" value="$(env MOWGLI_GPSRTK_FIX_REQUIRED)" />
+ </node>
+
+ <!-- Mowgli Blade Manager -->
+ <node pkg="mowgli" type="mowgli_blade" name="mowgli_to_om_blade_manager" required="true" output="screen" />
+
+ <!-- Mowgli Behavior Tree -->
+ <node pkg="mowgli" type="mowgli_bt" name="mowgli_bt" required="true" output="screen" />
+</launch>
