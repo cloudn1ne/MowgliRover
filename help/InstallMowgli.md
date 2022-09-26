@@ -110,14 +110,13 @@ cd ~
 git clone https://github.com/cloudn1ne/MowgliRover.git
 ```
 
-### Clone submodules
-
-This will fetch RTKLIB, openmower_ros and all its subrepos
+### Make catkin_workspace (in ~/MowgliRover), Clone submodules for MowgliRover
 
 ```
+. /opt/ros/noetic/setup.bash
 cd ~/MowgliRover/
-git submodule update --init --recursive
 catkin_make
+git submodule update --init --recursive
 ```
 
 ### Source your setup.bash files
@@ -133,7 +132,6 @@ cd ~/MowgliRover/
 sudo rosdep init
 rosdep update
 depit
-source ~/.bashrc
 ```
 
 ### Build Mowgli, OM, RobotLocalization, ...
