@@ -103,9 +103,6 @@ CATKIN_SHELL=bash
 
 ## Installing Mowgli, OpenMower and dependencies
 
-### Create empty ROS workspace for MowgliRover
-
-
 ### Clone MowgliRover Repo
 
 ```
