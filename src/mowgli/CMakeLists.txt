@@ -17,8 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
 	message_generation
   	tf2
 	tf2_geometry_msgs
-	tf2_ros
-	robot_localization
+	tf2_ros	
+	mower_msgs
 )
 
 # Geographiclib installs FindGeographicLib.cmake to this non-standard location
@@ -161,6 +161,8 @@ add_executable(mowgli_blade src/mowgli_blade.cpp)
 
 add_dependencies(mowgli_proxy mowgli_generate_messages_cpp)
 add_dependencies(mowgli_proxy mowgli_gencfg)
+
+add_dependencies(mowgli_blade mower_msgs)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(mowgli_proxy
