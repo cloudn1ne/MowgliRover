@@ -136,7 +136,6 @@ int main(int argc, char **argv)
     ROS_INFO_STREAM("mowgli_bt: All services are now available");
 
 
-
     BehaviorTreeFactory factory;    
     using namespace DummyNodes;
     // The recommended way to create a Node is through inheritance.
@@ -188,8 +187,21 @@ int main(int argc, char **argv)
     };
     factory.registerBuilder<GetMowerBladeState>( "GetMowerBladeState", builder_GetMowerBladeState);
 
+    // bt_status (IsCharging)
+    NodeBuilder builder_IsCharging =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<IsCharging>( name, config, &gstate_is_charging );
+    };
+    factory.registerBuilder<IsCharging>( "IsCharging", builder_IsCharging);
 
-
+    // bt_status (IsMowing)
+    NodeBuilder builder_IsMowing =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<IsMowing>( name, config, &gstate_blade_motor_enabled );
+    };
+    factory.registerBuilder<IsMowing>( "IsMowing", builder_IsMowing);
 
     // Load tree from XML
     auto tree = factory.createTreeFromFile("../MowgliRover/src/mowgli/src/tree.xml");
@@ -197,6 +209,7 @@ int main(int argc, char **argv)
 
     ros::Rate r(1); // ROS loop rate
     while (ros::ok()) {
+       //  ROS_INFO_STREAM("gstate_blade_motor_enabled: " << gstate_blade_motor_enabled);
         r.sleep();        
         tree.tickRoot();
     }

@@ -1,18 +1,22 @@
  <root main_tree_to_execute = "MainTree" >
+    <BehaviorTree ID="Docked">
+      <Sequence name="docked_seq">
+        <IsCharging/>
+        <SaySomething message="Docked: Bot is charging" />
+        <IsMowing/>
+        <SaySomething message="Docked: Blade is ON, switching OFF" />
+        <MowControl enable="0"/>
+        <SaySomething message="Docked: Blade switched OFF" />
+      </Sequence>
+
+    </BehaviorTree>
+
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <GetMowerBatteryVoltage out="{vbat}" />            
-            <SayFloat       message="{vbat}" />
-            <MowControl     enable="0"/>
-            <!-- <GpsControl     enable="1"/> -->
-            <GetMowerBladeState out="{blade_motor_enabled}"/>            
-            <SayBool        message="{blade_motor_enabled}" />
-
-          <!--  <CheckBattery   name="check_battery"/>
-            <CheckBattery   name="check_battery"/>
-            <OpenGripper    name="open_gripper"/>
-            <ApproachObject name="approach_object"/>
-            <CloseGripper   name="close_gripper"/>   -->          
+            <SaySomething message="MainTree: START" />
+      <!--     <MowControl enable="0"/>  -->
+            <SubTree ID="Docked"/>
+            <SaySomething message="MainTree: END" />          
         </Sequence>
      </BehaviorTree>
  </root>

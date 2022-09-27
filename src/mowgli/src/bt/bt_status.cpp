@@ -25,3 +25,46 @@ BT::NodeStatus GetMowerBladeState::tick()
     setOutput("out", *_blade_motor_enabled );    
     return BT::NodeStatus::SUCCESS;
 }
+
+
+/// @brief return charging state
+/// @return boolean "out" port
+BT::NodeStatus IsCharging::tick()
+{          
+    if (*_is_charging)
+    {
+#ifdef BT_DEBUG        
+    ROS_INFO("mowgli_bt: IsCharging::tick() -> SUCCESS");
+#endif                
+        return BT::NodeStatus::SUCCESS;
+    }
+    else
+    {
+#ifdef BT_DEBUG        
+    ROS_INFO("mowgli_bt: IsCharging::tick() -> SUCCESS");
+#endif                        
+        return BT::NodeStatus::FAILURE;
+    }
+}
+
+/// @brief return charging state
+/// @return boolean "out" port
+BT::NodeStatus IsMowing::tick()
+{   
+    
+
+    if (*_blade_motor_enabled)
+    {
+#ifdef BT_DEBUG        
+    ROS_INFO("mowgli_bt: IsMowing::tick() -> SUCCESS");
+#endif        
+        return BT::NodeStatus::SUCCESS;
+    }
+    else
+    {
+#ifdef BT_DEBUG        
+    ROS_INFO("mowgli_bt: IsMowing::tick() -> FAILURE");
+#endif        
+        return BT::NodeStatus::FAILURE;
+    }
+}

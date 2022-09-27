@@ -51,4 +51,36 @@ class GetMowerBladeState : public BT::SyncActionNode
     bool *_blade_motor_enabled;
 };
 
+class IsCharging : public BT::SyncActionNode
+{
+  public:
+    // Any TreeNode with ports must have a constructor with this signature
+    IsCharging(const std::string& name, const BT::NodeConfiguration& config,
+                       bool *is_charging )
+      : SyncActionNode(name, config),
+      _is_charging(is_charging)
+    {
+    }
+
+    BT::NodeStatus tick() override;
+  private:      
+    bool *_is_charging;
+};
+
+class IsMowing : public BT::SyncActionNode
+{
+  public:
+    // Any TreeNode with ports must have a constructor with this signature
+    IsMowing(const std::string& name, const BT::NodeConfiguration& config,
+                       bool *blade_motor_enabled )
+      : SyncActionNode(name, config),
+      _blade_motor_enabled(blade_motor_enabled)
+    {
+    }
+
+    BT::NodeStatus tick() override;
+  private:      
+    bool *_blade_motor_enabled;
+};
+
 #endif // BT_STATUS_H
