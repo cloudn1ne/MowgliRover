@@ -5,7 +5,7 @@
 
 #include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
-
+#include "mower_msgs/MowerControlSrv.h"
 
 // This is an asynchronous operation that will run in a separate thread.
 // It requires the input port "goal".

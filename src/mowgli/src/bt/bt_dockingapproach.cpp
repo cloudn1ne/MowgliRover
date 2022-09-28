@@ -1,60 +1,51 @@
-#include "bt_undocking.h"
+#include "bt_dockingapproach.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-// msg 
-#include "mower_msgs/MowerControlSrv.h"
 
 #define BT_DEBUG 1
 
 #define UNDOCK_POINTS_PER_M   10.0
 
-BT::NodeStatus Undocking::onStart()
+/// @brief Approach Docking station (but does not actually dock)
+BT::NodeStatus DockingApproach::onStart()
 {
-      float undock_distance;
+      float docking_approach_distance;
       std::string planner;
-
-      getInput("undock_distance", undock_distance);
+      
+      getInput("docking_approach_distance", docking_approach_distance);
       getInput("planner", planner);
+
 #ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ Undocking: STARTING ] undock_distance = "<< undock_distance << "m");
+      ROS_INFO_STREAM("[ DockingApproach: STARTING ] docking_approach_distance = "<< docking_approach_distance << "m, planner = '" << planner << "'");
 #endif
       
-      // get current yaw from /odom ()
+      // get docking pose
+      geometry_msgs::PoseStamped dockingPoseStamped = getDockingPose();
+
+
+      // Calculate a docking approaching point behind the actual docking point
       tf2::Quaternion quat;
-      tf2::fromMsg(_odom.pose.pose.orientation, quat);
-      tf2::Matrix3x3 matrix(quat);
+      tf2::fromMsg(dockingPoseStamped.pose.orientation, quat);
+      tf2::Matrix3x3 m(quat);
       double roll, pitch, yaw;
-      matrix.getRPY(roll, pitch, yaw);
+      m.getRPY(roll, pitch, yaw);
 
-      // create a path out of n individual poses       
-      nav_msgs::Path undockingPath;
-      geometry_msgs::PoseStamped undockingPose;
-      undockingPose.pose = _odom.pose.pose;
-      undockingPose.header = _odom.header;
+      // calculate the docking approach start point
+      geometry_msgs::PoseStamped dockingApproachPoseStamped = dockingPoseStamped;
+      dockingApproachPoseStamped.pose.position.x -= cos(yaw) * docking_approach_distance;
+      dockingApproachPoseStamped.pose.position.y -= sin(yaw) * docking_approach_distance;
 
-      uint8_t undock_point_count = undock_distance * UNDOCK_POINTS_PER_M;
-      for (int i = 0; i < undock_point_count; i++) {                  
-            undockingPose.pose.position.x -= cos(yaw) * (i / UNDOCK_POINTS_PER_M);
-            undockingPose.pose.position.y -= sin(yaw) * (i / UNDOCK_POINTS_PER_M);
-            undockingPath.poses.push_back(undockingPose);
-      }
-#ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ Undocking: STARTING ] undocking path consists of "<< undockingPath.poses.size() << " poses");
-#endif
-      mbf_msgs::ExePathGoal exePathGoal;
-      exePathGoal.path = undockingPath;      
-      exePathGoal.angle_tolerance = 1.0 * (M_PI / 180.0);
-      exePathGoal.dist_tolerance = 0.1;
-      exePathGoal.tolerance_from_action = true;
-      exePathGoal.controller = planner;
+      // send docking appraoch pose to MBF
+      mbf_msgs::MoveBaseGoal moveBaseGoal;
+      moveBaseGoal.target_pose = dockingApproachPoseStamped;
+      moveBaseGoal.controller = planner;
+      _mbfClient->sendGoal(moveBaseGoal);
       
-      _mbfClient->sendGoal(exePathGoal);
-      
-      return BT::NodeStatus::RUNNING;
+      return BT::NodeStatus::RUNNING;    
 }
 
-// Monitor the current MBF Goal Execution
-BT::NodeStatus Undocking::onRunning()
+/// @brief Monitor the current MBF Goal Execution
+BT::NodeStatus DockingApproach::onRunning()
 {
       actionlib::SimpleClientGoalState current_status(actionlib::SimpleClientGoalState::PENDING);
 
@@ -76,22 +67,22 @@ BT::NodeStatus Undocking::onRunning()
             case actionlib::SimpleClientGoalState::ABORTED: 
             case actionlib::SimpleClientGoalState::LOST:      return BT::NodeStatus::RUNNING;
                         
-            default: ROS_ERROR_STREAM("[ Undocking: onRunning ] MBF returned unknown state "<< current_status.state_);
+            default: ROS_ERROR_STREAM("[ DockingApproach: onRunning ] MBF returned unknown state "<< current_status.state_);
       }
       
       // if we get here, something is wrong
       return BT::NodeStatus::FAILURE;
 }
 
-void Undocking::onHalted() 
+void DockingApproach::onHalted() 
 {
       // nothing to do here...
 #ifdef BT_DEBUG              
-      ROS_INFO_STREAM("[ Undocking: interrupted ]");    
+      ROS_INFO_STREAM("[ DockingApproach: interrupted ]");    
 #endif      
 }
 
-void Undocking::printNavState(int state)
+void DockingApproach::printNavState(int state)
 {
     switch (state)
     {
@@ -105,4 +96,19 @@ void Undocking::printNavState(int state)
         case actionlib::SimpleClientGoalState::LOST: ROS_INFO(">>> State: Lost <<<"); break;
         default: ROS_INFO(">>> State: Unknown Hu ? <<<"); break;
     }
+}
+
+
+
+/// @brief Get Docking Pose (2nd X press) from Map Server
+geometry_msgs::PoseStamped DockingApproach::getDockingPose() {       
+    geometry_msgs::PoseStamped _dockingPoseStamped;
+    mower_map::GetDockingPointSrv srv;
+    _svcClient.call(srv);
+        
+    _dockingPoseStamped.pose = srv.response.docking_pose;
+    _dockingPoseStamped.header.frame_id = "map";
+    _dockingPoseStamped.header.stamp = ros::Time::now();
+
+    return(_dockingPoseStamped);
 }

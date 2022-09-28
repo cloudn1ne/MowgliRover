@@ -1,31 +1,32 @@
 
 
-#ifndef BT_UNDOCKING_H
-#define BT_UNDOCKING_H
+#ifndef BT_DOCKINGAPPROACH_H
+#define BT_DOCKINGAPPROACH_H
 
 #include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
-#include "mbf_msgs/ExePathAction.h"
+#include "mbf_msgs/MoveBaseAction.h"
 #include "actionlib/client/simple_action_client.h"
 #include "nav_msgs/Odometry.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include <tf2/LinearMath/Transform.h>
+#include "mower_map/GetDockingPointSrv.h"
 
 
 // This is an asynchronous operation that will run in a separate thread.
 // It requires the input port "goal".
 
-class Undocking : public BT::StatefulActionNode
+class DockingApproach : public BT::StatefulActionNode
 {
   public:
     // Any TreeNode with ports must have a constructor with this signature
-    Undocking(const std::string& name, const BT::NodeConfiguration& config,
-               actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClient,
-               nav_msgs::Odometry odom               
+    DockingApproach(const std::string& name, const BT::NodeConfiguration& config,
+               actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *mbfClient,
+               ros::ServiceClient svcClient    
                )
       : StatefulActionNode(name, config),
       _mbfClient(mbfClient),
-      _odom(odom)      
+      _svcClient(svcClient)
     {
     }
 
@@ -33,7 +34,7 @@ class Undocking : public BT::StatefulActionNode
     static BT::PortsList providedPorts()
     {
         return{ 
-                BT::InputPort<float>("undock_distance"), 
+                BT::InputPort<float>("docking_approach_distance"),
                 BT::InputPort<std::string>("planner") 
               };
     }
@@ -46,11 +47,12 @@ class Undocking : public BT::StatefulActionNode
 
     virtual void printNavState(int state);
 
+    virtual geometry_msgs::PoseStamped getDockingPose();
+
   private:    
     // uint8_t requested_state;
     ros::ServiceClient _svcClient;
-    actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *_mbfClient;
-    nav_msgs::Odometry _odom;
+    actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *_mbfClient;
 };
 
-#endif // BT_UNDOCKING_H
+#endif // BT_DOCKINGAPPROACH_H

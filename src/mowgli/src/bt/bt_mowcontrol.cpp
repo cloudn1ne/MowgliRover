@@ -1,9 +1,6 @@
 #include "bt_mowcontrol.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-// msg 
-#include "mower_msgs/MowerControlSrv.h"
-
 // #define BT_DEBUG 1
 
 

@@ -14,7 +14,7 @@
         <SaySomething message="hlc_START: START" />  
         <Sequence name="Undock">
           <IsCharging/> 
-          <Undocking undock_distance="0.5"/>        
+          <Undocking undock_distance="0.5" planner="DockingFTCPlanner"/>        
         </Sequence>
         <SaySomething message="hlc_START: END" /> 
       </Sequence>
@@ -22,7 +22,13 @@
 
     <BehaviorTree ID="hlc_HOME">
       <Sequence name="hlc_HOME">
-        <SaySomething message="hlc_HOME: does nothing atm" />  
+        <SaySomething message="hlc_HOME: Docking Approach" />  
+        <Sequence name="DockingApproach">
+          <Inverter>
+            <IsCharging/> 
+          </Inverter> 
+          <DockingApproach docking_approach_distance="0.5" planner="FTCPlanner"/>        
+        </Sequence>
       </Sequence>
     </BehaviorTree>
 

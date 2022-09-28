@@ -23,6 +23,7 @@
 // ROS
 #include "ros/ros.h"
 #include "mbf_msgs/ExePathAction.h"
+#include "mbf_msgs/MoveBaseAction.h"
 #include "actionlib/client/simple_action_client.h"
 
 // standard messages/srvs
@@ -42,6 +43,7 @@
 #include "bt_gpscontrol.h"
 #include "bt_mowcontrol.h"
 #include "bt_undocking.h"
+#include "bt_dockingapproach.h"
 #include "bt_status.h"
 
 #define SERVICE_CLIENT_WAIT_TIMEOUT     60.0        /* amount of time to wait for services to become available */
@@ -53,7 +55,7 @@ using namespace BT;
 /*******************************************/
 /* origin /mowgli/status */
 bool gstate_blade_motor_enabled;
-bool gstate_is_charging;
+bool gstate_is_charging;    // TODO: we need a proper gstate_is_docked ! - is_charging might be flapping when the charge PWM adjusts even if in dock
 float gstate_v_battery;
 uint8_t gstate_highlevel_command = 0;
 
@@ -89,7 +91,7 @@ ros::ServiceServer srvHighLevelCommand;     /* /mower_service/high_level_control
 /* Simple Action clients */
 /*************************/
 actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *srvMbfExePathClient;    /* /move_base_flex/exe_path */
-
+actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *srvMbfMoveBaseClient;  /* /move_base_flex/move_base */
 
 /// @brief enable or disable the GPS receiver
 /// @param enabled 
@@ -123,9 +125,14 @@ void publishCurrentState(const std::string& state_str)
 /// @return true if all are found, false if one is not found within a given timeout
 bool waitForServers(void)
 {
-    ROS_INFO("mowgli_bt: Waiting for MoveBaseFlex/PathClient server ...");
+    ROS_INFO("mowgli_bt: Waiting for MoveBaseFlex/ExecPathClient server ...");
     if (!srvMbfExePathClient->waitForServer(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
-        ROS_ERROR("mowgli_bt: Timeout while waiting for MoveBaseFlex/PathClient server");        
+        ROS_ERROR("mowgli_bt: Timeout while waiting for MoveBaseFlex/ExecPathClient server");        
+        return false;
+    }
+    ROS_INFO("mowgli_bt: Waiting for MoveBaseFlex/MoveBaseClient server ...");
+    if (!srvMbfMoveBaseClient->waitForServer(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+        ROS_ERROR("mowgli_bt: Timeout while waiting for MoveBaseFlex/MoveBaseClient server");        
         return false;
     }
     return true; // all action servers present
@@ -235,6 +242,7 @@ int main(int argc, char **argv)
 
     // Action clients
     srvMbfExePathClient = new actionlib::SimpleActionClient<mbf_msgs::ExePathAction>("move_base_flex/exe_path", true);
+    srvMbfMoveBaseClient = new actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction>("move_base_flex/move_base", true);
 
     // Wait for servers
     if (!waitForServers())
@@ -278,6 +286,15 @@ int main(int argc, char **argv)
     // Mowgli Nodes
     // bt_gpscontrol
     factory.registerNodeType<GpsControl>("GpsControl");
+
+    // bt_dockingapproach (DockingApproach)
+    NodeBuilder builder_DockingApproach =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<DockingApproach>( name, config, srvMbfMoveBaseClient, srvDockingPointClient);
+    };
+    factory.registerBuilder<DockingApproach>( "DockingApproach", builder_DockingApproach);
+
 
     // bt_undocking (Undocking)
     NodeBuilder builder_Undocking =
