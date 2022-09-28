@@ -1,8 +1,16 @@
+//
+// included by all BT action Nodes  
+//
 #ifndef BT_NODES_H
 #define BT_NODES_H
 
+#include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
+#include "mbf_msgs/ExePathAction.h"
+#include "actionlib/client/simple_action_client.h"
+
+
 
 namespace DummyNodes
 {

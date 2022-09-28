@@ -17,4 +17,22 @@
 
  <!-- Mowgli Behavior Tree -->
  <node pkg="mowgli" type="mowgli_bt" name="mowgli_bt" required="true" output="screen" />
+
+ <node pkg="mower_map" type="mower_map_service" name="map_service" output="screen"/>
+
+ <!-- OM specific settings below this comment-->
+ <node name="move_base_flex" pkg="mbf_costmap_nav" type="mbf_costmap_nav" required="true" output="screen">
+    <remap from="cmd_vel" to="/nav_vel"/>
+    <rosparam file="$(find mowgli)/params/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find mowgli)/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find mowgli)/params/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/move_base_flex.yaml" command="load"/>
+    <rosparam file="$(find mowgli)/params/ftc_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/calibration_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/docking_ftc_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/free_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/global_planner_params.yaml" command="load" />
+ </node>
+
 </launch>

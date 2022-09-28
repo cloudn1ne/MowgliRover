@@ -149,6 +149,7 @@ include_directories(
 
 add_executable(mowgli_bt 
                src/mowgli_bt.cpp 
+               src/bt/bt_undocking.cpp
                src/bt/bt_nodes.cpp
                src/bt/bt_gpscontrol.cpp
                src/bt/bt_mowcontrol.cpp

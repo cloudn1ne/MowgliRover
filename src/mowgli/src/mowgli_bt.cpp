@@ -11,43 +11,84 @@
  * 
  */
 
-#include "ros/ros.h"
+// #define BT_DEBUG 1
+// OS
+#include "signal.h"
+
+// BT
+
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"       // ZeroMQ for Groot
-#include "signal.h"
+
+// ROS
+#include "ros/ros.h"
+#include "mbf_msgs/ExePathAction.h"
+#include "actionlib/client/simple_action_client.h"
 
 // standard messages/srvs
 #include "std_msgs/String.h"
+#include "nav_msgs/Odometry.h"
 
 // non standard messages/srvs
 #include "mower_msgs/GPSControlSrv.h"
 #include "mower_msgs/MowerControlSrv.h"
+#include "mower_map/GetDockingPointSrv.h"
+#include "mower_msgs/HighLevelControlSrv.h"
 #include "mowgli/status.h"
+
 
 
 #include "bt_nodes.h"
 #include "bt_gpscontrol.h"
 #include "bt_mowcontrol.h"
+#include "bt_undocking.h"
 #include "bt_status.h"
 
 #define SERVICE_CLIENT_WAIT_TIMEOUT     60.0        /* amount of time to wait for services to become available */
 
 using namespace BT;
 
-// global states used by nodes
+/*******************************************/
+/* global states used by nodes passed by & */
+/*******************************************/
+/* origin /mowgli/status */
 bool gstate_blade_motor_enabled;
 bool gstate_is_charging;
 float gstate_v_battery;
+uint8_t gstate_highlevel_command = 0;
 
-// Subscribers
-ros::Subscriber subMowgliStatus;            /* mowgli/status */
+ros::Time gstate_status_last_time(0.0);
+/* origin /odom */
+nav_msgs::Odometry gstate_odom;
+ros::Time gstate_odom_last_time(0.0);
 
-// Publishers
+/***************/
+/* Subscribers */
+/***************/
+ros::Subscriber subMowgliStatus;            /* /mowgli/status */
+ros::Subscriber subOdom;                    /* /odom */
+
+/**************/
+/* Publishers */
+/**************/
 ros::Publisher pubCurrentState;             /* /mower_logic/current_state */
 
-// Service clients
-ros::ServiceClient srvGpsControlClient;     /* mower_service/set_gps_state */
-ros::ServiceClient srvMowClient;            /* mower_service/mow_enabled */
+/*******************/
+/* Service clients */
+/*******************/
+ros::ServiceClient srvGpsControlClient;     /* /mower_service/set_gps_state */
+ros::ServiceClient srvMowClient;            /* /mower_service/mow_enabled */
+ros::ServiceClient srvDockingPointClient;   /* /mower_map_service/get_docking_point */
+
+/*******************/
+/* Service servers */
+/*******************/
+ros::ServiceServer srvHighLevelCommand;     /* /mower_service/high_level_control */
+
+/*************************/
+/* Simple Action clients */
+/*************************/
+actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *srvMbfExePathClient;    /* /move_base_flex/exe_path */
 
 
 /// @brief enable or disable the GPS receiver
@@ -76,6 +117,21 @@ void publishCurrentState(const std::string& state_str)
     pubCurrentState.publish(state_name);
 }
 
+
+/// @brief wait for all action servers required to become available
+/// @param  
+/// @return true if all are found, false if one is not found within a given timeout
+bool waitForServers(void)
+{
+    ROS_INFO("mowgli_bt: Waiting for MoveBaseFlex/PathClient server ...");
+    if (!srvMbfExePathClient->waitForServer(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+        ROS_ERROR("mowgli_bt: Timeout while waiting for MoveBaseFlex/PathClient server");        
+        return false;
+    }
+    return true; // all action servers present
+}
+
+
 /// @brief wait for all services required to become available
 /// @param  
 /// @return true if all are found, false if one is not found within a given timeout
@@ -91,18 +147,62 @@ bool waitForServices(void)
         ROS_ERROR("mowgli_bt: Timeout while waiting for Mow service");        
         return false;
     }
-
+    ROS_INFO("mowgli_bt: Waiting for DockingPoint service ...");
+    if (!srvDockingPointClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+        ROS_ERROR("mowgli_bt: Timeout while waiting for DockingPoint service");        
+        return false;
+    }    
     return true; // all services present
 }
 
 
+/// @brief /mowgli/status subscriber callback
+/// @param msg status message
 void MowgliStatusCB(const mowgli::status::ConstPtr &msg) 
 {    
-//    ROS_INFO_STREAM("mowgli_bt: MowgliStatusCB");
-
+#ifdef BT_DEBUG    
+    ROS_INFO_STREAM("mowgli_bt: MowgliStatusCB");
+#endif
     gstate_blade_motor_enabled = msg->blade_motor_enabled;
     gstate_v_battery = msg->v_battery;
     gstate_is_charging = msg->is_charging;    
+    gstate_status_last_time = ros::Time::now();
+}
+
+/// @brief /odom subscriber callback
+/// @param msg status message
+void OdomCB(const nav_msgs::Odometry::ConstPtr &msg) 
+{    
+#ifdef BT_DEBUG
+    ROS_INFO_STREAM("mowgli_bt: OdomCB");
+#endif
+    gstate_odom = *msg;    
+    gstate_odom_last_time = ros::Time::now();
+}
+
+
+/// @brief callback for the /mower_service/high_level_control service
+/// @param req HighLevelControlSrv
+/// @param res HighLevelControlSrv
+/// @return always true
+bool highLevelCommandCB(mower_msgs::HighLevelControlSrvRequest &req, mower_msgs::HighLevelControlSrvResponse &res) 
+{
+    gstate_highlevel_command = req.command;
+    switch(req.command) {
+        case mower_msgs::HighLevelControlSrvRequest::COMMAND_HOME: 
+	        ROS_INFO_STREAM("mowgli_bt: received COMMAND_HOME");
+            break;
+        case mower_msgs::HighLevelControlSrvRequest::COMMAND_START:
+		    ROS_INFO_STREAM("mowgli_bt: received COMMAND_START");
+            break;
+        case mower_msgs::HighLevelControlSrvRequest::COMMAND_S1:
+		    ROS_INFO_STREAM("mowgli_bt: received COMMAND_S1");
+            break;
+        case mower_msgs::HighLevelControlSrvRequest::COMMAND_S2:
+	        ROS_INFO_STREAM("mowgli_bt: received COMMAND_S2"); 
+            break;
+    }
+    return true;
 }
 
 int main(int argc, char **argv) 
@@ -115,26 +215,42 @@ int main(int argc, char **argv)
     signal(SIGINT, mySigintHandler);
     ROS_INFO_STREAM("mowgli_bt: Starting mowgli_bt");
 
-    ros::AsyncSpinner asyncSpinner(1);  
+    ros::AsyncSpinner asyncSpinner(2);  
     asyncSpinner.start();
 
     // Subscribers
     subMowgliStatus = n.subscribe("mowgli/status", 50, MowgliStatusCB);
+    subOdom = n.subscribe("odom", 50, OdomCB);
 
     // Publishers
     pubCurrentState = n.advertise<std_msgs::String>("mower_logic/current_state", 10, true);
     
+    // Service servers
+    ros::ServiceServer srvHighLevelCommand = n.advertiseService("mower_service/high_level_control", highLevelCommandCB);
+
     // Service clients
     srvGpsControlClient = n.serviceClient<mower_msgs::GPSControlSrv>("mower_service/set_gps_state");
     srvMowClient =  n.serviceClient<mower_msgs::MowerControlSrv>("mower_service/mow_enabled");
+    srvDockingPointClient = n.serviceClient<mower_map::GetDockingPointSrv>("mower_map_service/get_docking_point");
 
+    // Action clients
+    srvMbfExePathClient = new actionlib::SimpleActionClient<mbf_msgs::ExePathAction>("move_base_flex/exe_path", true);
+
+    // Wait for servers
+    if (!waitForServers())
+    {
+        ros::shutdown(); // bye bye
+        exit(-1);
+    }
+    ROS_INFO_STREAM("mowgli_bt: All action servers are now available");
+
+    // Wait for services
     if (!waitForServices())
     {
         ros::shutdown(); // bye bye
         exit(-1);
     }
     ROS_INFO_STREAM("mowgli_bt: All services are now available");
-
 
     BehaviorTreeFactory factory;    
     using namespace DummyNodes;
@@ -162,6 +278,15 @@ int main(int argc, char **argv)
     // Mowgli Nodes
     // bt_gpscontrol
     factory.registerNodeType<GpsControl>("GpsControl");
+
+    // bt_undocking (Undocking)
+    NodeBuilder builder_Undocking =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<Undocking>( name, config, srvMbfExePathClient, gstate_odom);
+    };
+    factory.registerBuilder<Undocking>( "Undocking", builder_Undocking);
+
 
     // bt_mowcontrol (MowControl)
     NodeBuilder builder_MowControl =
@@ -202,6 +327,16 @@ int main(int argc, char **argv)
         return std::make_unique<IsMowing>( name, config, &gstate_blade_motor_enabled );
     };
     factory.registerBuilder<IsMowing>( "IsMowing", builder_IsMowing);
+
+    // bt_status (GetHighLevelCommand)
+    
+    NodeBuilder builder_GetHighLevelCommand =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<GetHighLevelCommand>( name, config, &gstate_highlevel_command );
+    };
+
+    factory.registerBuilder<GetHighLevelCommand>( "GetHighLevelCommand", builder_GetHighLevelCommand);
 
     // Load tree from XML
     auto tree = factory.createTreeFromFile("../MowgliRover/src/mowgli/src/tree.xml");

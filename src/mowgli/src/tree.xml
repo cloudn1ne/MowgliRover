@@ -1,21 +1,55 @@
  <root main_tree_to_execute = "MainTree" >
-    <BehaviorTree ID="Docked">
-      <Sequence name="docked_seq">
-        <IsCharging/>
-        <SaySomething message="Docked: Bot is charging" />
-        <IsMowing/>
-        <SaySomething message="Docked: Blade is ON, switching OFF" />
-        <MowControl enable="0"/>
-        <SaySomething message="Docked: Blade switched OFF" />
-      </Sequence>
 
+    <BehaviorTree ID="TurnOffBladeWhenDocked">
+      <Sequence name="Turn OFF Blade Motor when docked">
+        <IsCharging/>        
+        <IsMowing/>        
+        <MowControl enable="0"/>        
+      </Sequence>
+    </BehaviorTree>
+
+
+    <BehaviorTree ID="hlc_START">
+      <Sequence name="hlc_START">
+        <SaySomething message="hlc_START: START" />  
+        <Sequence name="Undock">
+          <IsCharging/> 
+          <Undocking undock_distance="0.5"/>        
+        </Sequence>
+        <SaySomething message="hlc_START: END" /> 
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="hlc_HOME">
+      <Sequence name="hlc_HOME">
+        <SaySomething message="hlc_HOME: does nothing atm" />  
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="IDLE">
+      <Sequence name="IDLE">
+        <SaySomething message="IDLE: does nothing atm" />  
+      </Sequence>
     </BehaviorTree>
 
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
             <SaySomething message="MainTree: START" />
-      <!--     <MowControl enable="0"/>  -->
-            <SubTree ID="Docked"/>
+            <GetHighLevelCommand output_key="{high_level_command}"/>
+            <SaySomething message="{high_level_command}" />
+            <Switch2 
+                name="High Level Command Switch"
+                variable="{high_level_command}"
+                case_1="1"
+                case_2="2"
+            >
+              <SubTree ID="hlc_START"/>
+              <SubTree ID="hlc_HOME"/>
+              <SubTree ID="IDLE"/><!-- default branch -->
+            </Switch2>
+         
+       <!--     <MowControl enable="1"/>  -->
+            <SubTree ID="TurnOffBladeWhenDocked"/>
             <SaySomething message="MainTree: END" />          
         </Sequence>
      </BehaviorTree>

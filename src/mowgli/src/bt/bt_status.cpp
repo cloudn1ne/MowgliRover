@@ -68,3 +68,31 @@ BT::NodeStatus IsMowing::tick()
         return BT::NodeStatus::FAILURE;
     }
 }
+
+
+
+/// @brief save current high level command to the blackboard
+/// @return boolean "out" port
+BT::NodeStatus GetHighLevelCommand::tick()
+{   
+    std::string inp_output_key;
+    getInput("output_key", inp_output_key);
+
+    if (*_highlevel_command > 0)
+    {
+#ifdef BT_DEBUG        
+    ROS_INFO("mowgli_bt: GetHighLevelCommand::tick() -> SUCCESS");
+#endif        
+        setOutput("output_key", std::to_string(*_highlevel_command) );
+        *_highlevel_command = 0;
+        return BT::NodeStatus::SUCCESS;
+    }
+    else
+    {
+#ifdef BT_DEBUG        
+    ROS_INFO("mowgli_bt: GetHighLevelCommand::tick() -> FAILURE");
+#endif        
+        setOutput("output_key", "NULL");
+        return BT::NodeStatus::FAILURE;
+    }
+}

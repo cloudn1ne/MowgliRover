@@ -83,4 +83,28 @@ class IsMowing : public BT::SyncActionNode
     bool *_blade_motor_enabled;
 };
 
+class GetHighLevelCommand : public BT::SyncActionNode
+{
+  public:
+    // Any TreeNode with ports must have a constructor with this signature
+    GetHighLevelCommand(const std::string& name, const BT::NodeConfiguration& config,
+                       uint8_t *highlevel_command )
+      : SyncActionNode(name, config),
+      _highlevel_command(highlevel_command)
+    {
+    }
+
+    // It is mandatory to define this static method.
+  
+    static BT::PortsList providedPorts()
+    {
+        return{ BT::BidirectionalPort<std::string>("output_key") };
+    }
+
+
+    BT::NodeStatus tick() override;
+  private:      
+    uint8_t *_highlevel_command;
+};
+
 #endif // BT_STATUS_H
