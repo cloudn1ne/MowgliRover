@@ -1,7 +1,7 @@
 
 
-#ifndef BT_DRIVEBACKWARDS_H
-#define BT_DRIVEBACKWARDS_H
+#ifndef BT_DRIVEFORWARD_H
+#define BT_DRIVEFORWARD_H
 
 #include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -12,10 +12,10 @@
 #include "tf2/LinearMath/Transform.h"
 
 
-class DriveBackwards : public BT::StatefulActionNode
+class DriveForward : public BT::StatefulActionNode
 {
   public:    
-    DriveBackwards(const std::string& name, const BT::NodeConfiguration& config,
+    DriveForward(const std::string& name, const BT::NodeConfiguration& config,
                actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClient,
                nav_msgs::Odometry *odom               
                )
@@ -48,4 +48,4 @@ class DriveBackwards : public BT::StatefulActionNode
     nav_msgs::Odometry *_odom;
 };
 
-#endif // BT_DRIVEBACKWARDS_H
+#endif // BT_DRIVEFORWARD_H

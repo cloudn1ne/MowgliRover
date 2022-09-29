@@ -1,4 +1,14 @@
-#include "bt_drivebackwards.h"
+/*
+ * Mowgli DRIVEBACKWARD Node V1.0
+ * (c) Georg Swoboda <cn@warp.at> 2022
+ *
+ * https://github.com/cloudn1ne/MowgliRover
+ *
+ * v1.0: inital release
+ *
+ */
+
+#include "bt_drivebackward.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 #define BT_DEBUG 1
@@ -7,7 +17,7 @@
 
 /// @brief Drive backwards from the current posistion for <distance> meters using <planner>
 /// @return NodeStatus
-BT::NodeStatus DriveBackwards::onStart()
+BT::NodeStatus DriveBackward::onStart()
 {
       float distance;
       std::string planner;
@@ -16,7 +26,7 @@ BT::NodeStatus DriveBackwards::onStart()
       getInput("planner", planner);
 
 #ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ DriveBackwards: STARTING ] distance = "<< distance << "m");      
+      ROS_INFO_STREAM("[ DriveBackward: STARTING ] distance = "<< distance << "m");      
 #endif
       
       // get current yaw from /odom ()
@@ -27,30 +37,30 @@ BT::NodeStatus DriveBackwards::onStart()
       matrix.getRPY(roll, pitch, yaw);
 
 #ifdef BT_DEBUG
-      ROS_INFO_STREAM("[ DriveBackwards: STARTING ] current pose x = "<< _odom->pose.pose.position.x << " y= " << _odom->pose.pose.position.y << " yaw = " << yaw*180/M_PI);
+      ROS_INFO_STREAM("[ DriveBackward: STARTING ] current pose x = "<< _odom->pose.pose.position.x << " y= " << _odom->pose.pose.position.y << " yaw = " << yaw*180/M_PI);
 #endif
 
       // create a path out of n individual poses       
-      nav_msgs::Path DriveBackwardsPath;
+      nav_msgs::Path DriveBackwardPath;
 
-      geometry_msgs::PoseStamped DriveBackwardsPose;
-      DriveBackwardsPose.header = _odom->header;
+      geometry_msgs::PoseStamped DriveBackwardPose;
+      DriveBackwardPose.header = _odom->header;
 
       uint16_t point_count = distance * POINTS_PER_M;
       for (int i = 0; i < point_count; i++) {    
-            DriveBackwardsPose.pose = _odom->pose.pose;              
-            DriveBackwardsPose.pose.position.x -= cos(yaw) * (i / POINTS_PER_M);
-            DriveBackwardsPose.pose.position.y -= sin(yaw) * (i / POINTS_PER_M);
-
-            ROS_INFO_STREAM("[ DriveBackwards: STARTING ] path pose (" << i << ") x = "<< DriveBackwardsPose.pose.position.x << " y= " << DriveBackwardsPose.pose.position.y << " yaw = " << yaw*180/M_PI);
-
-            DriveBackwardsPath.poses.push_back(DriveBackwardsPose);
+            DriveBackwardPose.pose = _odom->pose.pose;              
+            DriveBackwardPose.pose.position.x -= cos(yaw) * (i / POINTS_PER_M);
+            DriveBackwardPose.pose.position.y -= sin(yaw) * (i / POINTS_PER_M);
+#ifdef BT_DEBUG
+            ROS_INFO_STREAM("[ DriveBackward: STARTING ] path pose (" << i << ") x = "<< DriveBackwardPose.pose.position.x << " y= " << DriveBackwardPose.pose.position.y << " yaw = " << yaw*180/M_PI);
+#endif
+            DriveBackwardPath.poses.push_back(DriveBackwardPose);
       }
 #ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ DriveBackwards: STARTING ] DriveBackwards path consists of "<< DriveBackwardsPath.poses.size() << " poses");
+      ROS_INFO_STREAM("[ DriveBackward: STARTING ] DriveBackward path consists of "<< DriveBackwardPath.poses.size() << " poses");
 #endif
       mbf_msgs::ExePathGoal exePathGoal;
-      exePathGoal.path = DriveBackwardsPath;      
+      exePathGoal.path = DriveBackwardPath;      
       exePathGoal.angle_tolerance = 1.0 * (M_PI / 180.0);
       exePathGoal.dist_tolerance = 0.1;
       exePathGoal.tolerance_from_action = true;
@@ -62,7 +72,7 @@ BT::NodeStatus DriveBackwards::onStart()
 }
 
 // Monitor the current MBF Goal Execution
-BT::NodeStatus DriveBackwards::onRunning()
+BT::NodeStatus DriveBackward::onRunning()
 {
       actionlib::SimpleClientGoalState current_status(actionlib::SimpleClientGoalState::PENDING);
 
@@ -84,22 +94,22 @@ BT::NodeStatus DriveBackwards::onRunning()
             case actionlib::SimpleClientGoalState::ABORTED: 
             case actionlib::SimpleClientGoalState::LOST:      return BT::NodeStatus::FAILURE;
                         
-            default: ROS_ERROR_STREAM("[ DriveBackwards: onRunning ] MBF returned unknown state "<< current_status.state_);
+            default: ROS_ERROR_STREAM("[ DriveBackward: onRunning ] MBF returned unknown state "<< current_status.state_);
       }
       
       // if we get here, something is wrong
       return BT::NodeStatus::FAILURE;
 }
 
-void DriveBackwards::onHalted() 
+void DriveBackward::onHalted() 
 {
       // nothing to do here...
 #ifdef BT_DEBUG              
-      ROS_INFO_STREAM("[ DriveBackwards: interrupted ]");    
+      ROS_INFO_STREAM("[ DriveBackward: interrupted ]");    
 #endif      
 }
 
-void DriveBackwards::printNavState(int state)
+void DriveBackward::printNavState(int state)
 {
     switch (state)
     {

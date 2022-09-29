@@ -46,7 +46,8 @@
 #include "bt_dockingapproach.h"
 #include "bt_dockingapproachpoint.h"
 #include "bt_docking.h"
-#include "bt_drivebackwards.h"
+#include "bt_drivebackward.h"
+#include "bt_driveforward.h"
 #include "bt_status.h"
 
 #define SERVICE_CLIENT_WAIT_TIMEOUT     60.0        /* amount of time to wait for services to become available */
@@ -332,14 +333,21 @@ int main(int argc, char **argv)
     factory.registerBuilder<Docking>( "Docking", builder_Docking);
 
 
-    // bt_drivebackwards (DriveBackwards)
-    NodeBuilder builder_DriveBackwards =
+    // bt_drivebackward (DriveBackward)
+    NodeBuilder builder_DriveBackward =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<DriveBackwards>( name, config, srvMbfExePathClient, &gstate_odom);
+        return std::make_unique<DriveBackward>( name, config, srvMbfExePathClient, &gstate_odom);
     };
-    factory.registerBuilder<DriveBackwards>( "DriveBackwards", builder_DriveBackwards);
+    factory.registerBuilder<DriveBackward>( "DriveBackward", builder_DriveBackward);
 
+    // bt_driveforward (DriveForward)
+    NodeBuilder builder_DriveForward =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<DriveForward>( name, config, srvMbfExePathClient, &gstate_odom);
+    };
+    factory.registerBuilder<DriveForward>( "DriveForward", builder_DriveForward);
 
     // bt_mowcontrol (MowControl)
     NodeBuilder builder_MowControl =

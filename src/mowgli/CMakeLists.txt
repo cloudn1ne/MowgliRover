@@ -152,7 +152,8 @@ add_executable(mowgli_bt
                src/bt/bt_docking.cpp
                src/bt/bt_dockingapproach.cpp
                src/bt/bt_dockingapproachpoint.cpp
-               src/bt/bt_drivebackwards.cpp
+               src/bt/bt_drivebackward.cpp
+               src/bt/bt_driveforward.cpp
                src/bt/bt_nodes.cpp
                src/bt/bt_gpscontrol.cpp
                src/bt/bt_mowcontrol.cpp

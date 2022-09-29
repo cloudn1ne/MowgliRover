@@ -12,24 +12,44 @@
     <BehaviorTree ID="hlc_START">
       <Sequence name="hlc_START">        
         <Sequence name="Undock">
-        <!--  <IsCharging/>  -->
-          <DriveBackwards distance="1.5" planner="DockingFTCPlanner"/>        
+          <IsCharging/>
+          <DriveBackward distance="1.5" planner="DockingFTCPlanner"/>        
         </Sequence>        
       </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="hlc_HOME">
       <Sequence name="hlc_HOME">        
-        <Sequence name="DockingApproach">
-          <Inverter>
-            <IsCharging/> 
-          </Inverter> 
-          <DockingApproachPoint docking_approach_distance="0.75" planner="FTCPlanner"/>        
-          <DockingApproach docking_approach_distance="0.75" planner="FTCPlanner"/> 
-          <Docking docking_distance="0.85" planner="DockingFTCPlanner"/>
-        </Sequence>
+       <RetryUntilSuccessful num_attempts="3">        
+            <Fallback name="DockingAttemptWithFallback">
+                <Sequence name="DockingAttempt">
+                    <Inverter>
+                      <IsCharging/> 
+                    </Inverter> 
+                    <DockingApproachPoint docking_approach_distance="0.75" planner="FTCPlanner"/>        
+                    <DockingApproach docking_approach_distance="0.75" planner="FTCPlanner"/>                 
+                    <Docking docking_distance="0.45" planner="DockingFTCPlanner"/>                              
+                </Sequence>
+                <ForceFailure> <!--force next retry attempt, by failing Fallback -->
+                  <DriveBackward distance="1.5" planner="DockingFTCPlanner"/>
+                </ForceFailure>
+            </Fallback>         
+       </RetryUntilSuccessful>
       </Sequence>
     </BehaviorTree>
+
+    <BehaviorTree ID="hlc_PAUSE">
+      <Sequence name="PAUSE">
+        <DriveForward distance="1.0" planner="FTCPlanner"/>
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="hlc_STOP">
+      <Sequence name="STOP">
+        <DriveBackward distance="1.0" planner="DockingFTCPlanner"/>
+      </Sequence>
+    </BehaviorTree>
+
 
     <BehaviorTree ID="IDLE">
       <Sequence name="IDLE">
@@ -41,16 +61,20 @@
         <Sequence name="root_sequence">            
             <GetHighLevelCommand output_key="{high_level_command}"/>
             <SaySomething message="{high_level_command}" />
-            <Switch2 
+            <Switch4 
                 name="High Level Command Switch"
                 variable="{high_level_command}"
                 case_1="1"
                 case_2="2"
+                case_3="3"
+                case_4="4" 
             >
               <SubTree ID="hlc_START"/>
               <SubTree ID="hlc_HOME"/>
+              <SubTree ID="hlc_PAUSE"/>
+              <SubTree ID="hlc_STOP"/>
               <SubTree ID="IDLE"/><!-- default branch -->
-            </Switch2>
+            </Switch4>
          
        <!--     <MowControl enable="1"/>  -->
             <SubTree ID="TurnOffBladeWhenDocked"/>            

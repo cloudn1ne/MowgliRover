@@ -1,3 +1,12 @@
+/*
+ * Mowgli DOCKING Node V1.0
+ * (c) Georg Swoboda <cn@warp.at> 2022
+ *
+ * https://github.com/cloudn1ne/MowgliRover
+ *
+ * v1.0: inital release
+ *
+ */
 #include "bt_docking.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
@@ -36,6 +45,9 @@ BT::NodeStatus Docking::onStart()
       for (int i = 0; i < docking_point_count; i++) {                  
             dockingPoseStamped.pose.position.x += cos(yaw) * (i / DOCKING_POINTS_PER_M);
             dockingPoseStamped.pose.position.y += sin(yaw) * (i / DOCKING_POINTS_PER_M);
+#ifdef BT_DEBUG
+            ROS_INFO_STREAM("[ Docking: STARTING ] docking path pose (" << i << ") x = "<< dockingPoseStamped.pose.position.x << " y= " << dockingPoseStamped.pose.position.y << " yaw = " << yaw*180/M_PI);
+#endif            
             dockingPath.poses.push_back(dockingPoseStamped);
       }
  #ifdef BT_DEBUG        
@@ -88,12 +100,11 @@ BT::NodeStatus Docking::onRunning()
                                                               if (isDocked())     
                                                               {
 #ifdef BT_DEBUG                                                                  
-                                                                 ROS_INFO_STREAM("Got a voltage of: " << *_v_charge << "V - docking is now completed");
-                                                                 ROS_INFO_STREAM("[ DockingApproach: SUCCESS (sensed voltage before path was completed) ]");
+                                                                 ROS_INFO_STREAM("Got a voltage of: " << *_v_charge << "V - aborting docking path");
+                                                                 ROS_INFO_STREAM("[ DockingApproach: RUNNING (sensed voltage before path was completed) ]");
 #endif                                                                 
                                                                  _mbfClient->cancelGoal();
-                                                                 stopMoving(); // ensure the path planner does not interfere anymore or we might lose isDocked() again                                                                 
-                                                                 return BT::NodeStatus::SUCCESS;                                                                  
+                                                                 stopMoving(); // ensure the path planner does not interfere anymore or we might lose isDocked() again                                                                                                                                                                                                   
                                                               }
                                                               return BT::NodeStatus::RUNNING;            
             //----------------------------------------------------------------------------            
@@ -101,6 +112,16 @@ BT::NodeStatus Docking::onRunning()
             case actionlib::SimpleClientGoalState::REJECTED: 
             case actionlib::SimpleClientGoalState::PREEMPTED: 
             case actionlib::SimpleClientGoalState::ABORTED: 
+#ifdef BT_DEBUG
+                                                              ROS_INFO_STREAM("[ DockingApproach: ABORTED ]");
+#endif                                                                          
+                                                              if (isDocked())
+                                                              {
+#ifdef BT_DEBUG                                                                  
+                                                                 ROS_INFO_STREAM("Got a voltage of: " << *_v_charge << "V - docking was successfull after aborting docking path");                                                                 
+#endif                                                                   
+                                                                 return BT::NodeStatus::SUCCESS;
+                                                              }
             case actionlib::SimpleClientGoalState::LOST:      return BT::NodeStatus::FAILURE;
                         
             default: ROS_ERROR_STREAM("[ Docking: onRunning ] MBF returned unknown state "<< current_status.state_);

@@ -1,3 +1,12 @@
+/*
+ * Mowgli DOCKINGAPPROACHPOINT Node V1.0
+ * (c) Georg Swoboda <cn@warp.at> 2022
+ *
+ * https://github.com/cloudn1ne/MowgliRover
+ *
+ * v1.0: inital release
+ *
+ */
 #include "bt_dockingapproachpoint.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
