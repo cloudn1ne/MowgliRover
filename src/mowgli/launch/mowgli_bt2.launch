@@ -44,6 +44,7 @@
     <param name="base_local_planner" value="FreePlanner" />
     <param name="base_global_planner" value="GlobalPlanner" />
  </node>
+
  <node pkg="mower_map" type="mower_map_service" name="map_service" output="screen"/>
 
 

@@ -1,7 +1,7 @@
 
 
-#ifndef BT_UNDOCKING_H
-#define BT_UNDOCKING_H
+#ifndef BT_DRIVEBACKWARDS_H
+#define BT_DRIVEBACKWARDS_H
 
 #include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -9,19 +9,15 @@
 #include "actionlib/client/simple_action_client.h"
 #include "nav_msgs/Odometry.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-#include <tf2/LinearMath/Transform.h>
+#include "tf2/LinearMath/Transform.h"
 
 
-// This is an asynchronous operation that will run in a separate thread.
-// It requires the input port "goal".
-
-class Undocking : public BT::StatefulActionNode
+class DriveBackwards : public BT::StatefulActionNode
 {
-  public:
-    // Any TreeNode with ports must have a constructor with this signature
-    Undocking(const std::string& name, const BT::NodeConfiguration& config,
+  public:    
+    DriveBackwards(const std::string& name, const BT::NodeConfiguration& config,
                actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClient,
-               nav_msgs::Odometry odom               
+               nav_msgs::Odometry *odom               
                )
       : StatefulActionNode(name, config),
       _mbfClient(mbfClient),
@@ -33,7 +29,7 @@ class Undocking : public BT::StatefulActionNode
     static BT::PortsList providedPorts()
     {
         return{ 
-                BT::InputPort<float>("undock_distance"), 
+                BT::InputPort<float>("distance"), 
                 BT::InputPort<std::string>("planner") 
               };
     }
@@ -46,11 +42,10 @@ class Undocking : public BT::StatefulActionNode
 
     virtual void printNavState(int state);
 
-  private:    
-    // uint8_t requested_state;
+  private:        
     ros::ServiceClient _svcClient;
     actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *_mbfClient;
-    nav_msgs::Odometry _odom;
+    nav_msgs::Odometry *_odom;
 };
 
-#endif // BT_UNDOCKING_H
+#endif // BT_DRIVEBACKWARDS_H

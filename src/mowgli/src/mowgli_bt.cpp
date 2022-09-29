@@ -12,6 +12,7 @@
  */
 
 // #define BT_DEBUG 1
+
 // OS
 #include "signal.h"
 
@@ -42,11 +43,14 @@
 #include "bt_nodes.h"
 #include "bt_gpscontrol.h"
 #include "bt_mowcontrol.h"
-#include "bt_undocking.h"
 #include "bt_dockingapproach.h"
+#include "bt_dockingapproachpoint.h"
+#include "bt_docking.h"
+#include "bt_drivebackwards.h"
 #include "bt_status.h"
 
 #define SERVICE_CLIENT_WAIT_TIMEOUT     60.0        /* amount of time to wait for services to become available */
+#define ACTION_CLIENT_WAIT_TIMEOUT    1800.0        /* amount of time to wait for action servers, if there is no GPS, MBF will not come up, so we need a substanital amount of time potentially */
 
 using namespace BT;
 
@@ -57,6 +61,7 @@ using namespace BT;
 bool gstate_blade_motor_enabled;
 bool gstate_is_charging;    // TODO: we need a proper gstate_is_docked ! - is_charging might be flapping when the charge PWM adjusts even if in dock
 float gstate_v_battery;
+float gstate_v_charge;
 uint8_t gstate_highlevel_command = 0;
 
 ros::Time gstate_status_last_time(0.0);
@@ -74,6 +79,7 @@ ros::Subscriber subOdom;                    /* /odom */
 /* Publishers */
 /**************/
 ros::Publisher pubCurrentState;             /* /mower_logic/current_state */
+ros::Publisher pubCommandVelocity;          /* /logic_vel */
 
 /*******************/
 /* Service clients */
@@ -105,6 +111,17 @@ bool callSetGpsControlSrv(bool enabled)
     return true;
 }
 
+/// @brief Halt all bot movement
+void stopMoving() 
+{
+    ROS_INFO_STREAM("mowgli_bt: stopMoving() - stopping bot movement");
+
+    geometry_msgs::Twist stop;
+    stop.angular.z = 0;
+    stop.linear.x = 0;
+    pubCommandVelocity.publish(stop);
+}
+
 /// @brief signal handler (e.g. ctrl-c)
 /// @param sig 
 void mySigintHandler(int sig)
@@ -126,12 +143,12 @@ void publishCurrentState(const std::string& state_str)
 bool waitForServers(void)
 {
     ROS_INFO("mowgli_bt: Waiting for MoveBaseFlex/ExecPathClient server ...");
-    if (!srvMbfExePathClient->waitForServer(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+    if (!srvMbfExePathClient->waitForServer(ros::Duration(ACTION_CLIENT_WAIT_TIMEOUT, 0.0))) {
         ROS_ERROR("mowgli_bt: Timeout while waiting for MoveBaseFlex/ExecPathClient server");        
         return false;
     }
     ROS_INFO("mowgli_bt: Waiting for MoveBaseFlex/MoveBaseClient server ...");
-    if (!srvMbfMoveBaseClient->waitForServer(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+    if (!srvMbfMoveBaseClient->waitForServer(ros::Duration(ACTION_CLIENT_WAIT_TIMEOUT, 0.0))) {
         ROS_ERROR("mowgli_bt: Timeout while waiting for MoveBaseFlex/MoveBaseClient server");        
         return false;
     }
@@ -172,6 +189,7 @@ void MowgliStatusCB(const mowgli::status::ConstPtr &msg)
 #endif
     gstate_blade_motor_enabled = msg->blade_motor_enabled;
     gstate_v_battery = msg->v_battery;
+    gstate_v_charge = msg->v_charge;
     gstate_is_charging = msg->is_charging;    
     gstate_status_last_time = ros::Time::now();
 }
@@ -231,7 +249,8 @@ int main(int argc, char **argv)
 
     // Publishers
     pubCurrentState = n.advertise<std_msgs::String>("mower_logic/current_state", 10, true);
-    
+    pubCommandVelocity = n.advertise<geometry_msgs::Twist>("/logic_vel", 1, true);
+
     // Service servers
     ros::ServiceServer srvHighLevelCommand = n.advertiseService("mower_service/high_level_control", highLevelCommandCB);
 
@@ -287,22 +306,39 @@ int main(int argc, char **argv)
     // bt_gpscontrol
     factory.registerNodeType<GpsControl>("GpsControl");
 
+    // bt_dockingapproachpoint (DockingApproachPoint)
+    NodeBuilder builder_DockingApproachPoint =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<DockingApproachPoint>( name, config, srvMbfMoveBaseClient, srvDockingPointClient);
+    };
+    factory.registerBuilder<DockingApproachPoint>( "DockingApproachPoint", builder_DockingApproachPoint);
+
+
     // bt_dockingapproach (DockingApproach)
     NodeBuilder builder_DockingApproach =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<DockingApproach>( name, config, srvMbfMoveBaseClient, srvDockingPointClient);
+        return std::make_unique<DockingApproach>( name, config, srvMbfExePathClient, srvDockingPointClient);
     };
     factory.registerBuilder<DockingApproach>( "DockingApproach", builder_DockingApproach);
 
-
-    // bt_undocking (Undocking)
-    NodeBuilder builder_Undocking =
+    // bt_dockingapproach (Docking)
+    NodeBuilder builder_Docking =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<Undocking>( name, config, srvMbfExePathClient, gstate_odom);
+        return std::make_unique<Docking>( name, config, srvMbfExePathClient, srvDockingPointClient, &gstate_v_charge);     // TODO: introduce an "is_docked" status variable
     };
-    factory.registerBuilder<Undocking>( "Undocking", builder_Undocking);
+    factory.registerBuilder<Docking>( "Docking", builder_Docking);
+
+
+    // bt_drivebackwards (DriveBackwards)
+    NodeBuilder builder_DriveBackwards =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<DriveBackwards>( name, config, srvMbfExePathClient, &gstate_odom);
+    };
+    factory.registerBuilder<DriveBackwards>( "DriveBackwards", builder_DriveBackwards);
 
 
     // bt_mowcontrol (MowControl)

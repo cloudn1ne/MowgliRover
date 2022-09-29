@@ -1,4 +1,4 @@
-#include "bt_dockingapproach.h"
+#include "bt_dockingapproachpoint.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 
@@ -7,19 +7,19 @@
 #define DOCKING_POINTS_PER_M   10.0
 
 /// @brief Approach Docking station (but does not actually dock)
-BT::NodeStatus DockingApproach::onStart()
+BT::NodeStatus DockingApproachPoint::onStart()
 {
- float docking_approach_distance;
+      float docking_approach_distance;
       std::string planner;
 
       getInput("docking_approach_distance", docking_approach_distance);
       getInput("planner", planner);
 
 #ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ DockingApproach: STARTING ] docking_approach_distance = "<< docking_approach_distance << "m, planner = '" << planner << "'");
+      ROS_INFO_STREAM("[ DockingApproachPoint: STARTING ] docking_approach_distance = "<< docking_approach_distance << "m, planner = '" << planner << "'");
 #endif
-
-        // get docking pose
+      
+      // get docking pose
       geometry_msgs::PoseStamped dockingPoseStamped = getDockingPose();
 
       // Calculate a docking approaching point behind the actual docking point
@@ -29,44 +29,31 @@ BT::NodeStatus DockingApproach::onStart()
       double roll, pitch, yaw;
       m.getRPY(roll, pitch, yaw);
 
+      // calculate the docking approach start point
+      geometry_msgs::PoseStamped DockingApproachPointPoseStamped = dockingPoseStamped;
+      DockingApproachPointPoseStamped.pose.position.x -= cos(yaw) * docking_approach_distance;
+      DockingApproachPointPoseStamped.pose.position.y -= sin(yaw) * docking_approach_distance;
 
-      // create a path out of n individual poses       
-      nav_msgs::Path dockingApproachPath;      
 
-      // we start at the DockingApproachPoint, and we use <dockingapproach_point_count> poses to sneak up to our dockingPose 
-      uint8_t dockingapproach_point_count = docking_approach_distance * DOCKING_POINTS_PER_M;
-      for (int i = 0; i < dockingapproach_point_count; i++) {          
-            geometry_msgs::PoseStamped dockingApproachPose = dockingPoseStamped;        
-            dockingApproachPose.pose.position.x -= cos(yaw) * ((dockingapproach_point_count - i) / DOCKING_POINTS_PER_M);
-            dockingApproachPose.pose.position.y -= sin(yaw) * ((dockingapproach_point_count - i) / DOCKING_POINTS_PER_M);                   
 #ifdef BT_DEBUG
-            ROS_INFO_STREAM("[ DockingApproach: STARTING ] path pose (" << i << ") x = "<< dockingApproachPose.pose.position.x << " y= " << dockingApproachPose.pose.position.y << " yaw = " << yaw*180/M_PI);
-#endif                 
-            dockingApproachPath.poses.push_back(dockingApproachPose);             
-      }
-#ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ DockingApproach: STARTING ] docking approach path consists of "<< dockingApproachPath.poses.size() << " poses");
+      ROS_INFO_STREAM("[ DockingApproachPoint: STARTING ] docking approach point pose x = "<< DockingApproachPointPoseStamped.pose.position.x << " y= " << DockingApproachPointPoseStamped.pose.position.y << " yaw = " << yaw*180/M_PI);
 #endif
 
-      mbf_msgs::ExePathGoal exePathGoal;
-      exePathGoal.path = dockingApproachPath;
-      exePathGoal.angle_tolerance = 1.0 * (M_PI / 180.0);
-      exePathGoal.dist_tolerance = 0.1;
-      exePathGoal.tolerance_from_action = true;
-      exePathGoal.controller = planner;
-      
-      _mbfExePathClient->sendGoal(exePathGoal);
+      // send docking approach pose to MBF
+      mbf_msgs::MoveBaseGoal moveBaseGoal;
+      moveBaseGoal.target_pose = DockingApproachPointPoseStamped;
+      moveBaseGoal.controller = planner;      
+      _mbfMoveBaseClient->sendGoal(moveBaseGoal);
 
-      return BT::NodeStatus::RUNNING;
+      return BT::NodeStatus::RUNNING;    
 }
 
 /// @brief Monitor the current MBF Goal Execution
-BT::NodeStatus DockingApproach::onRunning()
+BT::NodeStatus DockingApproachPoint::onRunning()
 {
-
       actionlib::SimpleClientGoalState current_status(actionlib::SimpleClientGoalState::PENDING);
 
-      current_status = _mbfExePathClient->getState();
+      current_status = _mbfMoveBaseClient->getState();
 
 #ifdef BT_DEBUG        
       printNavState(current_status.state_);
@@ -75,7 +62,7 @@ BT::NodeStatus DockingApproach::onRunning()
       {
             case actionlib::SimpleClientGoalState::SUCCEEDED: 
 #ifdef BT_DEBUG
-                                                            ROS_INFO_STREAM("[ DockingApproach: SUCCESS ]");
+                                                            ROS_INFO_STREAM("[ DockingApproachPoint: SUCCESS ]");
 #endif            
 
                                                             return BT::NodeStatus::SUCCESS;
@@ -83,7 +70,7 @@ BT::NodeStatus DockingApproach::onRunning()
             case actionlib::SimpleClientGoalState::PENDING: 
             case actionlib::SimpleClientGoalState::ACTIVE:  
 #ifdef BT_DEBUG
-                                                            ROS_INFO_STREAM("[ DockingApproach: RUNNING ]");
+                                                            ROS_INFO_STREAM("[ DockingApproachPoint: RUNNING ]");
 #endif                          
                                                             return BT::NodeStatus::RUNNING;
             //----------------------------------------------------------------------------            
@@ -93,22 +80,22 @@ BT::NodeStatus DockingApproach::onRunning()
             case actionlib::SimpleClientGoalState::ABORTED: 
             case actionlib::SimpleClientGoalState::LOST:      return BT::NodeStatus::FAILURE;
                         
-            default: ROS_ERROR_STREAM("[ DockingApproach: onRunning ] MBF returned unknown state "<< current_status.state_);
+            default: ROS_ERROR_STREAM("[ DockingApproachPoint: onRunning ] MBF returned unknown state "<< current_status.state_);
       }
       
       // if we get here, something is wrong
       return BT::NodeStatus::FAILURE;
 }
 
-void DockingApproach::onHalted() 
+void DockingApproachPoint::onHalted() 
 {
       // nothing to do here...
 #ifdef BT_DEBUG              
-      ROS_INFO_STREAM("[ DockingApproach: interrupted ]");    
+      ROS_INFO_STREAM("[ DockingApproachPoint: interrupted ]");    
 #endif      
 }
 
-void DockingApproach::printNavState(int state)
+void DockingApproachPoint::printNavState(int state)
 {
     switch (state)
     {
@@ -127,14 +114,14 @@ void DockingApproach::printNavState(int state)
 
 
 /// @brief Get Docking Pose (2nd X press) from Map Server
-geometry_msgs::PoseStamped DockingApproach::getDockingPose() {       
-    geometry_msgs::PoseStamped dockingPoseStamped;
+geometry_msgs::PoseStamped DockingApproachPoint::getDockingPose() {       
+    geometry_msgs::PoseStamped _dockingPoseStamped;
     mower_map::GetDockingPointSrv srv;
     _svcClient.call(srv);
         
-    dockingPoseStamped.pose = srv.response.docking_pose;
-    dockingPoseStamped.header.frame_id = "map";
-    dockingPoseStamped.header.stamp = ros::Time::now();
+    _dockingPoseStamped.pose = srv.response.docking_pose;
+    _dockingPoseStamped.header.frame_id = "map";
+    _dockingPoseStamped.header.stamp = ros::Time::now();
 
-    return(dockingPoseStamped);
+    return(_dockingPoseStamped);
 }

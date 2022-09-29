@@ -1,7 +1,7 @@
 
 
-#ifndef BT_DOCKINGAPPROACH_H
-#define BT_DOCKINGAPPROACH_H
+#ifndef BT_DOCKINGAPPROACHPointPOINT_H
+#define BT_DOCKINGAPPROACHPointPOINT_H
 
 #include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -17,19 +17,18 @@
 // This is an asynchronous operation that will run in a separate thread.
 // It requires the input port "goal".
 
-class DockingApproach : public BT::StatefulActionNode
+class DockingApproachPoint : public BT::StatefulActionNode
 {
   public:
     // Any TreeNode with ports must have a constructor with this signature
-    DockingApproach(const std::string& name, const BT::NodeConfiguration& config,
-               actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfExePathClient,               
+    DockingApproachPoint(const std::string& name, const BT::NodeConfiguration& config,               
+               actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *mbfMoveBaseClient,
                ros::ServiceClient svcClient    
                )
-      : StatefulActionNode(name, config),
-      _mbfExePathClient(mbfExePathClient),      
+      : StatefulActionNode(name, config), 
+      _mbfMoveBaseClient(mbfMoveBaseClient),
       _svcClient(svcClient)
-    {
-        
+    {        
     }
 
     // It is mandatory to define this static method.
@@ -50,10 +49,10 @@ class DockingApproach : public BT::StatefulActionNode
     virtual void printNavState(int state);
 
     virtual geometry_msgs::PoseStamped getDockingPose();
-    
+
   private:        
-    ros::ServiceClient _svcClient;
-    actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *_mbfExePathClient;    
+    ros::ServiceClient _svcClient;    
+    actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *_mbfMoveBaseClient;
 };
 
-#endif // BT_DOCKINGAPPROACH_H
+#endif // BT_DOCKINGAPPROACHPointPOINT_H

@@ -10,24 +10,23 @@
 
 
     <BehaviorTree ID="hlc_START">
-      <Sequence name="hlc_START">
-        <SaySomething message="hlc_START: START" />  
+      <Sequence name="hlc_START">        
         <Sequence name="Undock">
-          <IsCharging/> 
-          <Undocking undock_distance="0.5" planner="DockingFTCPlanner"/>        
-        </Sequence>
-        <SaySomething message="hlc_START: END" /> 
+        <!--  <IsCharging/>  -->
+          <DriveBackwards distance="1.5" planner="DockingFTCPlanner"/>        
+        </Sequence>        
       </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="hlc_HOME">
-      <Sequence name="hlc_HOME">
-        <SaySomething message="hlc_HOME: Docking Approach" />  
+      <Sequence name="hlc_HOME">        
         <Sequence name="DockingApproach">
           <Inverter>
             <IsCharging/> 
           </Inverter> 
-          <DockingApproach docking_approach_distance="0.5" planner="FTCPlanner"/>        
+          <DockingApproachPoint docking_approach_distance="0.75" planner="FTCPlanner"/>        
+          <DockingApproach docking_approach_distance="0.75" planner="FTCPlanner"/> 
+          <Docking docking_distance="0.85" planner="DockingFTCPlanner"/>
         </Sequence>
       </Sequence>
     </BehaviorTree>
@@ -39,8 +38,7 @@
     </BehaviorTree>
 
      <BehaviorTree ID="MainTree">
-        <Sequence name="root_sequence">
-            <SaySomething message="MainTree: START" />
+        <Sequence name="root_sequence">            
             <GetHighLevelCommand output_key="{high_level_command}"/>
             <SaySomething message="{high_level_command}" />
             <Switch2 
@@ -55,8 +53,7 @@
             </Switch2>
          
        <!--     <MowControl enable="1"/>  -->
-            <SubTree ID="TurnOffBladeWhenDocked"/>
-            <SaySomething message="MainTree: END" />          
+            <SubTree ID="TurnOffBladeWhenDocked"/>            
         </Sequence>
      </BehaviorTree>
  </root>

@@ -1,48 +1,56 @@
-#include "bt_undocking.h"
+#include "bt_drivebackwards.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
-
-// msg 
-#include "mower_msgs/MowerControlSrv.h"
 
 #define BT_DEBUG 1
 
-#define UNDOCK_POINTS_PER_M   10.0
+#define POINTS_PER_M   10.0
 
-BT::NodeStatus Undocking::onStart()
+/// @brief Drive backwards from the current posistion for <distance> meters using <planner>
+/// @return NodeStatus
+BT::NodeStatus DriveBackwards::onStart()
 {
-      float undock_distance;
+      float distance;
       std::string planner;
 
-      getInput("undock_distance", undock_distance);
+      getInput("distance", distance);
       getInput("planner", planner);
+
 #ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ Undocking: STARTING ] undock_distance = "<< undock_distance << "m");
+      ROS_INFO_STREAM("[ DriveBackwards: STARTING ] distance = "<< distance << "m");      
 #endif
       
       // get current yaw from /odom ()
       tf2::Quaternion quat;
-      tf2::fromMsg(_odom.pose.pose.orientation, quat);
+      tf2::fromMsg(_odom->pose.pose.orientation, quat);
       tf2::Matrix3x3 matrix(quat);
       double roll, pitch, yaw;
       matrix.getRPY(roll, pitch, yaw);
 
-      // create a path out of n individual poses       
-      nav_msgs::Path undockingPath;
-      geometry_msgs::PoseStamped undockingPose;
-      undockingPose.pose = _odom.pose.pose;
-      undockingPose.header = _odom.header;
+#ifdef BT_DEBUG
+      ROS_INFO_STREAM("[ DriveBackwards: STARTING ] current pose x = "<< _odom->pose.pose.position.x << " y= " << _odom->pose.pose.position.y << " yaw = " << yaw*180/M_PI);
+#endif
 
-      uint8_t undock_point_count = undock_distance * UNDOCK_POINTS_PER_M;
-      for (int i = 0; i < undock_point_count; i++) {                  
-            undockingPose.pose.position.x -= cos(yaw) * (i / UNDOCK_POINTS_PER_M);
-            undockingPose.pose.position.y -= sin(yaw) * (i / UNDOCK_POINTS_PER_M);
-            undockingPath.poses.push_back(undockingPose);
+      // create a path out of n individual poses       
+      nav_msgs::Path DriveBackwardsPath;
+
+      geometry_msgs::PoseStamped DriveBackwardsPose;
+      DriveBackwardsPose.header = _odom->header;
+
+      uint16_t point_count = distance * POINTS_PER_M;
+      for (int i = 0; i < point_count; i++) {    
+            DriveBackwardsPose.pose = _odom->pose.pose;              
+            DriveBackwardsPose.pose.position.x -= cos(yaw) * (i / POINTS_PER_M);
+            DriveBackwardsPose.pose.position.y -= sin(yaw) * (i / POINTS_PER_M);
+
+            ROS_INFO_STREAM("[ DriveBackwards: STARTING ] path pose (" << i << ") x = "<< DriveBackwardsPose.pose.position.x << " y= " << DriveBackwardsPose.pose.position.y << " yaw = " << yaw*180/M_PI);
+
+            DriveBackwardsPath.poses.push_back(DriveBackwardsPose);
       }
 #ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ Undocking: STARTING ] undocking path consists of "<< undockingPath.poses.size() << " poses");
+      ROS_INFO_STREAM("[ DriveBackwards: STARTING ] DriveBackwards path consists of "<< DriveBackwardsPath.poses.size() << " poses");
 #endif
       mbf_msgs::ExePathGoal exePathGoal;
-      exePathGoal.path = undockingPath;      
+      exePathGoal.path = DriveBackwardsPath;      
       exePathGoal.angle_tolerance = 1.0 * (M_PI / 180.0);
       exePathGoal.dist_tolerance = 0.1;
       exePathGoal.tolerance_from_action = true;
@@ -54,7 +62,7 @@ BT::NodeStatus Undocking::onStart()
 }
 
 // Monitor the current MBF Goal Execution
-BT::NodeStatus Undocking::onRunning()
+BT::NodeStatus DriveBackwards::onRunning()
 {
       actionlib::SimpleClientGoalState current_status(actionlib::SimpleClientGoalState::PENDING);
 
@@ -74,24 +82,24 @@ BT::NodeStatus Undocking::onRunning()
             case actionlib::SimpleClientGoalState::REJECTED: 
             case actionlib::SimpleClientGoalState::PREEMPTED: 
             case actionlib::SimpleClientGoalState::ABORTED: 
-            case actionlib::SimpleClientGoalState::LOST:      return BT::NodeStatus::RUNNING;
+            case actionlib::SimpleClientGoalState::LOST:      return BT::NodeStatus::FAILURE;
                         
-            default: ROS_ERROR_STREAM("[ Undocking: onRunning ] MBF returned unknown state "<< current_status.state_);
+            default: ROS_ERROR_STREAM("[ DriveBackwards: onRunning ] MBF returned unknown state "<< current_status.state_);
       }
       
       // if we get here, something is wrong
       return BT::NodeStatus::FAILURE;
 }
 
-void Undocking::onHalted() 
+void DriveBackwards::onHalted() 
 {
       // nothing to do here...
 #ifdef BT_DEBUG              
-      ROS_INFO_STREAM("[ Undocking: interrupted ]");    
+      ROS_INFO_STREAM("[ DriveBackwards: interrupted ]");    
 #endif      
 }
 
-void Undocking::printNavState(int state)
+void DriveBackwards::printNavState(int state)
 {
     switch (state)
     {
