@@ -1,5 +1,5 @@
 /*
- * Mowgli DockingApproachPoint Node V1.0
+ * Mowgli MowPathApproachPoint Node v1.0
  * (c) Georg Swoboda <cn@warp.at> 2022
  *
  * https://github.com/cloudn1ne/MowgliRover
@@ -7,50 +7,35 @@
  * v1.0: inital release
  *
  */
-#include "bt_dockingapproachpoint.h"
+#include "bt_mowpathapproachpoint.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 
 #define BT_DEBUG 1
 
-#define DOCKING_POINTS_PER_M   10.0
-
 /// @brief Approach Docking station (but does not actually dock)
-BT::NodeStatus DockingApproachPoint::onStart()
+BT::NodeStatus MowPathApproachPoint::onStart()
 {
-      float docking_approach_distance;
+      geometry_msgs::PoseStamped approachPose;
       std::string planner;
 
-      getInput("docking_approach_distance", docking_approach_distance);
+      getInput("pose", approachPose);
       getInput("planner", planner);
 
-#ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ DockingApproachPoint: STARTING ] docking_approach_distance = "<< docking_approach_distance << "m, planner = '" << planner << "'");
-#endif
-      
-      // get docking pose
-      geometry_msgs::PoseStamped dockingPoseStamped = getDockingPose();
-
-      // Calculate a docking approaching point behind the actual docking point
+#ifdef BT_DEBUG       
+      // Calculate yaw (only for display purposes)
       tf2::Quaternion quat;
-      tf2::fromMsg(dockingPoseStamped.pose.orientation, quat);
+      tf2::fromMsg(approachPose.pose.orientation, quat);
       tf2::Matrix3x3 m(quat);
       double roll, pitch, yaw;
       m.getRPY(roll, pitch, yaw);
-
-      // calculate the docking approach start point
-      geometry_msgs::PoseStamped DockingApproachPointPoseStamped = dockingPoseStamped;
-      DockingApproachPointPoseStamped.pose.position.x -= cos(yaw) * docking_approach_distance;
-      DockingApproachPointPoseStamped.pose.position.y -= sin(yaw) * docking_approach_distance;
-
-
-#ifdef BT_DEBUG
-      ROS_INFO_STREAM("[ DockingApproachPoint: STARTING ] docking approach point pose x = "<< DockingApproachPointPoseStamped.pose.position.x << " y= " << DockingApproachPointPoseStamped.pose.position.y << " yaw = " << yaw*180/M_PI);
+ 
+      ROS_INFO_STREAM("[ MowPathApproachPoint: STARTING ] pose = x = "<< approachPose.pose.position.x << " y= " << approachPose.pose.position.y << " yaw = " << yaw*180/M_PI << " deg, planner = '" << planner << "'");
 #endif
-
+      
       // send docking approach pose to MBF
       mbf_msgs::MoveBaseGoal moveBaseGoal;
-      moveBaseGoal.target_pose = DockingApproachPointPoseStamped;
+      moveBaseGoal.target_pose = approachPose;
       moveBaseGoal.controller = planner;      
       _mbfMoveBaseClient->sendGoal(moveBaseGoal);
 
@@ -58,7 +43,7 @@ BT::NodeStatus DockingApproachPoint::onStart()
 }
 
 /// @brief Monitor the current MBF Goal Execution
-BT::NodeStatus DockingApproachPoint::onRunning()
+BT::NodeStatus MowPathApproachPoint::onRunning()
 {
       actionlib::SimpleClientGoalState current_status(actionlib::SimpleClientGoalState::PENDING);
 
@@ -71,7 +56,7 @@ BT::NodeStatus DockingApproachPoint::onRunning()
       {
             case actionlib::SimpleClientGoalState::SUCCEEDED: 
 #ifdef BT_DEBUG
-                                                            ROS_INFO_STREAM("[ DockingApproachPoint: SUCCESS ]");
+                                                            ROS_INFO_STREAM("[ MowPathApproachPoint: SUCCESS ]");
 #endif            
 
                                                             return BT::NodeStatus::SUCCESS;
@@ -79,7 +64,7 @@ BT::NodeStatus DockingApproachPoint::onRunning()
             case actionlib::SimpleClientGoalState::PENDING: 
             case actionlib::SimpleClientGoalState::ACTIVE:  
 #ifdef BT_DEBUG
-                                                            ROS_INFO_STREAM("[ DockingApproachPoint: RUNNING ]");
+                                                            ROS_INFO_STREAM("[ MowPathApproachPoint: RUNNING ]");
 #endif                          
                                                             return BT::NodeStatus::RUNNING;
             //----------------------------------------------------------------------------            
@@ -87,24 +72,24 @@ BT::NodeStatus DockingApproachPoint::onRunning()
             case actionlib::SimpleClientGoalState::REJECTED: 
             case actionlib::SimpleClientGoalState::PREEMPTED: 
             case actionlib::SimpleClientGoalState::ABORTED: 
-            case actionlib::SimpleClientGoalState::LOST:      return BT::NodeStatus::FAILURE;
+            case actionlib::SimpleClientGoalState::LOST:    return BT::NodeStatus::FAILURE;
                         
-            default: ROS_ERROR_STREAM("[ DockingApproachPoint: onRunning ] MBF returned unknown state "<< current_status.state_);
+            default: ROS_ERROR_STREAM("[ MowPathApproachPoint: onRunning ] MBF returned unknown state "<< current_status.state_);
       }
       
       // if we get here, something is wrong
       return BT::NodeStatus::FAILURE;
 }
 
-void DockingApproachPoint::onHalted() 
+void MowPathApproachPoint::onHalted() 
 {
       // nothing to do here...
 #ifdef BT_DEBUG              
-      ROS_INFO_STREAM("[ DockingApproachPoint: interrupted ]");    
+      ROS_INFO_STREAM("[ MowPathApproachPoint: interrupted ]");    
 #endif      
 }
 
-void DockingApproachPoint::printNavState(int state)
+void MowPathApproachPoint::printNavState(int state)
 {
     switch (state)
     {
@@ -118,19 +103,4 @@ void DockingApproachPoint::printNavState(int state)
         case actionlib::SimpleClientGoalState::LOST: ROS_INFO(">>> State: Lost <<<"); break;
         default: ROS_INFO(">>> State: Unknown Hu ? <<<"); break;
     }
-}
-
-
-
-/// @brief Get Docking Pose (2nd X press) from Map Server
-geometry_msgs::PoseStamped DockingApproachPoint::getDockingPose() {       
-    geometry_msgs::PoseStamped _dockingPoseStamped;
-    mower_map::GetDockingPointSrv srv;
-    _svcClient.call(srv);
-        
-    _dockingPoseStamped.pose = srv.response.docking_pose;
-    _dockingPoseStamped.header.frame_id = "map";
-    _dockingPoseStamped.header.stamp = ros::Time::now();
-
-    return(_dockingPoseStamped);
 }

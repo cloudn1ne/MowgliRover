@@ -1,5 +1,5 @@
 /*
- * Mowgli MOWCONTROL Node V1.0
+ * Mowgli MowControl Node V1.0
  * (c) Georg Swoboda <cn@warp.at> 2022
  *
  * https://github.com/cloudn1ne/MowgliRover

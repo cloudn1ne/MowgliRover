@@ -1,0 +1,67 @@
+<!--
+- 
+- Mowgli Mowing v1.0
+-
+- (c) Georg Swoboda <cn@warp.at> 2022
+- https://github.com/cloudn1ne/MowgliRover
+-
+- *) If currently charging (in Docking Station) we  DriveBackward
+- *) We loop MowAreas from 0-99
+- *)    We loop MowPaths from 0-99
+- *)        For each MowPath we attempt 3 times to get to the first pose of the MowPath
+- *)        If we fail to reach the MowPathApproachPoint we strip N poses of the MowPath and retry until we hit the retry limit
+- *)        If the MowPathApproachPoint has been reached we will enable the Blade Motor and start following the MowPath
+- *) at the end we make sure the Blade Motor is switched off
+-->
+<root>
+    <BehaviorTree ID="Mowing">        
+      <Sequence name="Mowing">
+        <IfThenElse> 
+          <IsCharging/>  <!-- IF isCharging-->
+          <DriveBackward distance="1.0" planner="DockingFTCPlanner"/>  <!-- THEN -->    
+          <ForceSuccess> <!-- force SUCCESS even if we weren't docked so the sequence can continue -->
+            <SaySomething message="Not undocking as we are not in the Dock currently" />
+          </ForceSuccess>
+        </IfThenElse>
+        <ForLoop
+          loop_var="{area_index}"
+          loop_var_start="0"
+          loop_var_until="99"
+          increment_by="1"
+          name="mowAreas"
+        >
+            <Sequence name="iterateMowAreas">
+                <GetMowPlan area_index="{area_index}" mowplan="{mowplan}"/>
+                <ForLoop
+                  loop_var="{path_index}"
+                  loop_var_start="0"
+                  loop_var_until="99"
+                  increment_by="1"
+                  name="mowPaths"
+                > 
+                    <Sequence name="iterateMowPaths">  
+                      <GetMowPath path_index="{path_index}" mowplan="{mowplan}" mowpath_out="{mowpath}"/>                      
+                        <RetryUntilSuccessful num_attempts="3">        
+                            <Fallback name="ApproachFirstPoseFallback">
+                                <Sequence name="ApproachFirstPose">        
+                                    <GetFirstPose mowpath="{mowpath}" pose_out="{first_pose}"/>
+                                    <MowPathApproachPoint pose="{first_pose}" planner="FTCPlanner"/>            
+                                </Sequence>
+                                <ForceFailure> <!--force next retry attempt, by failing Fallback -->
+                                  <TrimPoses mowpath="{mowpath}" begin="0" end="5"/> <!-- we strip 5 poses of the mowpath, and re attempt to approach the new first_pose -->
+                                </ForceFailure>
+                            </Fallback>         
+                        </RetryUntilSuccessful>   
+                        <MowControl enable="1"/>     
+                        <MowPathFollow mowpath="{mowpath}" planner="FTCPlanner"/> 
+                        <MowControl enable="0"/>
+                    </Sequence>
+                    <SaySomething message="For iterateMowPaths ended ;-)" />
+                </ForLoop>
+            </Sequence>
+            <SaySomething message="For iterateMowAreas loop ended ;-)" />
+        </ForLoop>
+        <MowControl enable="0"/>      
+      </Sequence>    
+    </BehaviorTree>
+ </root>      

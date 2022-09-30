@@ -1,5 +1,5 @@
 /*
- * Mowgli DOCKING Node V1.0
+ * Mowgli Docking Node V1.0
  * (c) Georg Swoboda <cn@warp.at> 2022
  *
  * https://github.com/cloudn1ne/MowgliRover
@@ -118,7 +118,7 @@ BT::NodeStatus Docking::onRunning()
                                                               if (isDocked())
                                                               {
 #ifdef BT_DEBUG                                                                  
-                                                                 ROS_INFO_STREAM("Got a voltage of: " << *_v_charge << "V - docking was successfull after aborting docking path");                                                                 
+                                                                 ROS_INFO_STREAM("Got a voltage of: " << *_v_charge << "V - docking was successfull after aborting docking");                                                                 
 #endif                                                                   
                                                                  return BT::NodeStatus::SUCCESS;
                                                               }

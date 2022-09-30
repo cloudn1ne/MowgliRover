@@ -1,5 +1,5 @@
 /*
- * Mowgli DOCKINGAPPROACH Node V1.0
+ * Mowgli DockingApproach Node V1.0
  * (c) Georg Swoboda <cn@warp.at> 2022
  *
  * https://github.com/cloudn1ne/MowgliRover

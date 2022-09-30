@@ -35,7 +35,10 @@
 #include "mower_msgs/GPSControlSrv.h"
 #include "mower_msgs/MowerControlSrv.h"
 #include "mower_map/GetDockingPointSrv.h"
+#include "mower_map/GetMowingAreaSrv.h"
 #include "mower_msgs/HighLevelControlSrv.h"
+#include "slic3r_coverage_planner/PlanPath.h"
+#include "ftc_local_planner/PlannerGetProgress.h"
 #include "mowgli/status.h"
 
 
@@ -49,6 +52,16 @@
 #include "bt_drivebackward.h"
 #include "bt_driveforward.h"
 #include "bt_status.h"
+#include "bt_getmowplan.h"
+#include "bt_getmowpath.h"
+#include "bt_getfirstpose.h"
+#include "bt_mowpathapproachpoint.h"
+#include "bt_mowpathfollow.h"
+#include "bt_trimposes.h"
+
+
+// BT primitives
+#include "bt_forloop.h"
 
 #define SERVICE_CLIENT_WAIT_TIMEOUT     60.0        /* amount of time to wait for services to become available */
 #define ACTION_CLIENT_WAIT_TIMEOUT    1800.0        /* amount of time to wait for action servers, if there is no GPS, MBF will not come up, so we need a substanital amount of time potentially */
@@ -85,9 +98,12 @@ ros::Publisher pubCommandVelocity;          /* /logic_vel */
 /*******************/
 /* Service clients */
 /*******************/
-ros::ServiceClient srvGpsControlClient;     /* /mower_service/set_gps_state */
-ros::ServiceClient srvMowClient;            /* /mower_service/mow_enabled */
-ros::ServiceClient srvDockingPointClient;   /* /mower_map_service/get_docking_point */
+ros::ServiceClient svcGpsControlClient;         /* /mower_service/set_gps_state */
+ros::ServiceClient svcMowClient;                /* /mower_service/mow_enabled */
+ros::ServiceClient svcDockingPointClient;       /* /mower_map_service/get_docking_point */
+ros::ServiceClient svcMapClient;                /* /mower_map_service/get_mowing_area */
+ros::ServiceClient svcPlanPathClient;           /* /slic3r_coverage_planner/plan_path */
+ros::ServiceClient svcPlannerGetProgressClient; /* /move_base_flex/FTCPlanner/planner_get_progress */
 
 /*******************/
 /* Service servers */
@@ -107,7 +123,7 @@ bool callSetGpsControlSrv(bool enabled)
 {
     mower_msgs::GPSControlSrv srv;
     srv.request.gps_enabled = enabled;    
-    srvGpsControlClient.call(srv);
+    svcGpsControlClient.call(srv);
     // TODO check result
     return true;
 }
@@ -163,20 +179,35 @@ bool waitForServers(void)
 bool waitForServices(void)
 {
     ROS_INFO("mowgli_bt: Waiting for GpsControl service ...");
-    if (!srvGpsControlClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+    if (!svcGpsControlClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
         ROS_ERROR("mowgli_bt: Timeout while waiting for GpsControl service");        
         return false;
     }
     ROS_INFO("mowgli_bt: Waiting for Mow service ...");
-    if (!srvMowClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+    if (!svcMowClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
         ROS_ERROR("mowgli_bt: Timeout while waiting for Mow service");        
         return false;
     }
     ROS_INFO("mowgli_bt: Waiting for DockingPoint service ...");
-    if (!srvDockingPointClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+    if (!svcDockingPointClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
         ROS_ERROR("mowgli_bt: Timeout while waiting for DockingPoint service");        
         return false;
     }    
+    ROS_INFO("mowgli_bt: Waiting for Map service ...");
+    if (!svcMapClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+        ROS_ERROR("mowgli_bt: Timeout while waiting for Map service");        
+        return false;
+    }    
+    ROS_INFO("mowgli_bt: Waiting for PlanPath service ...");
+    if (!svcPlanPathClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+        ROS_ERROR("mowgli_bt: Timeout while waiting for PlanPath service");        
+        return false;
+    }      
+    ROS_INFO("mowgli_bt: Waiting for PlannerGetProgress service ...");
+    if (!svcPlannerGetProgressClient.waitForExistence(ros::Duration(SERVICE_CLIENT_WAIT_TIMEOUT, 0.0))) {
+        ROS_ERROR("mowgli_bt: Timeout while waiting for PlannerGetProgress service");        
+        return false;
+    }         
     return true; // all services present
 }
 
@@ -256,9 +287,12 @@ int main(int argc, char **argv)
     ros::ServiceServer srvHighLevelCommand = n.advertiseService("mower_service/high_level_control", highLevelCommandCB);
 
     // Service clients
-    srvGpsControlClient = n.serviceClient<mower_msgs::GPSControlSrv>("mower_service/set_gps_state");
-    srvMowClient =  n.serviceClient<mower_msgs::MowerControlSrv>("mower_service/mow_enabled");
-    srvDockingPointClient = n.serviceClient<mower_map::GetDockingPointSrv>("mower_map_service/get_docking_point");
+    svcGpsControlClient = n.serviceClient<mower_msgs::GPSControlSrv>("mower_service/set_gps_state");
+    svcMowClient =  n.serviceClient<mower_msgs::MowerControlSrv>("mower_service/mow_enabled");
+    svcDockingPointClient = n.serviceClient<mower_map::GetDockingPointSrv>("mower_map_service/get_docking_point");
+    svcMapClient = n.serviceClient<mower_map::GetMowingAreaSrv>("mower_map_service/get_mowing_area");
+    svcPlanPathClient = n.serviceClient<slic3r_coverage_planner::PlanPath>("slic3r_coverage_planner/plan_path");
+    svcPlannerGetProgressClient = n.serviceClient<ftc_local_planner::PlannerGetProgress>("move_base_flex/FTCPlanner/planner_get_progress");
 
     // Action clients
     srvMbfExePathClient = new actionlib::SimpleActionClient<mbf_msgs::ExePathAction>("move_base_flex/exe_path", true);
@@ -306,12 +340,44 @@ int main(int argc, char **argv)
     // Mowgli Nodes
     // bt_gpscontrol
     factory.registerNodeType<GpsControl>("GpsControl");
+    // bt_forloop
+    factory.registerNodeType<ForLoop>("ForLoop");
+    // bt_getmowpath
+    factory.registerNodeType<GetMowPath>("GetMowPath");
+    // bt_getfirstpose
+    factory.registerNodeType<GetFirstPose>("GetFirstPose");
+    // bt_trimposes
+    factory.registerNodeType<TrimPoses>("TrimPoses");
+
+    // bt_mowpathfollow (MowPathFollow)
+    NodeBuilder builder_MowPathFollow =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<MowPathFollow>( name, config, srvMbfExePathClient);
+    };
+    factory.registerBuilder<MowPathFollow>( "MowPathFollow", builder_MowPathFollow);
+
+    // bt_mowpathapproachpoint (MowPathApproachPoint)
+    NodeBuilder builder_MowPathApproachPoint =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<MowPathApproachPoint>( name, config, srvMbfMoveBaseClient);
+    };
+    factory.registerBuilder<MowPathApproachPoint>( "MowPathApproachPoint", builder_MowPathApproachPoint);
+
+    // bt_getmowplan (GetMowPlan)    
+    NodeBuilder builder_GetMowPlan =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<GetMowPlan>( name, config,  svcMapClient, svcPlanPathClient);
+    };
+    factory.registerBuilder<GetMowPlan>( "GetMowPlan", builder_GetMowPlan);
 
     // bt_dockingapproachpoint (DockingApproachPoint)
     NodeBuilder builder_DockingApproachPoint =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<DockingApproachPoint>( name, config, srvMbfMoveBaseClient, srvDockingPointClient);
+        return std::make_unique<DockingApproachPoint>( name, config, srvMbfMoveBaseClient, svcDockingPointClient);
     };
     factory.registerBuilder<DockingApproachPoint>( "DockingApproachPoint", builder_DockingApproachPoint);
 
@@ -320,7 +386,7 @@ int main(int argc, char **argv)
     NodeBuilder builder_DockingApproach =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<DockingApproach>( name, config, srvMbfExePathClient, srvDockingPointClient);
+        return std::make_unique<DockingApproach>( name, config, srvMbfExePathClient, svcDockingPointClient);
     };
     factory.registerBuilder<DockingApproach>( "DockingApproach", builder_DockingApproach);
 
@@ -328,7 +394,7 @@ int main(int argc, char **argv)
     NodeBuilder builder_Docking =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<Docking>( name, config, srvMbfExePathClient, srvDockingPointClient, &gstate_v_charge);     // TODO: introduce an "is_docked" status variable
+        return std::make_unique<Docking>( name, config, srvMbfExePathClient, svcDockingPointClient, &gstate_v_charge);     // TODO: introduce an "is_docked" status variable
     };
     factory.registerBuilder<Docking>( "Docking", builder_Docking);
 
@@ -353,7 +419,7 @@ int main(int argc, char **argv)
     NodeBuilder builder_MowControl =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<MowControl>( name, config, srvMowClient, &gstate_blade_motor_enabled );
+        return std::make_unique<MowControl>( name, config, svcMowClient, &gstate_blade_motor_enabled );
     };
     factory.registerBuilder<MowControl>( "MowControl", builder_MowControl);
 
@@ -389,15 +455,15 @@ int main(int argc, char **argv)
     };
     factory.registerBuilder<IsMowing>( "IsMowing", builder_IsMowing);
 
-    // bt_status (GetHighLevelCommand)
-    
+    // bt_status (GetHighLevelCommand)    
     NodeBuilder builder_GetHighLevelCommand =
     [](const std::string& name, const NodeConfiguration& config)
     {
         return std::make_unique<GetHighLevelCommand>( name, config, &gstate_highlevel_command );
     };
-
     factory.registerBuilder<GetHighLevelCommand>( "GetHighLevelCommand", builder_GetHighLevelCommand);
+
+
 
     // Load tree from XML
     auto tree = factory.createTreeFromFile("../MowgliRover/src/mowgli/src/tree.xml");
