@@ -35,7 +35,9 @@ void StateLogger::callback(Duration timestamp, const TreeNode& node,
 {
     if (status == BT::NodeStatus::RUNNING)
     {
+#ifdef BT_DEBUG      
       ROS_INFO_STREAM("StateLogger::callback active node: " << node.registrationName() << "/" << node.name());
+#endif      
       std_msgs::String state_name;
       state_name.data = node.registrationName() + "/" + node.name();
       _pubCurrentState.publish(state_name);    
