@@ -29,5 +29,5 @@ XXX needs to match the extracted type.
 
 ```
 <GetEnvFloat var="OM_DOCKING_DISTANCE" float_out="{floatenvtest}"/>
-<SayInt message="{floatenvtest}"/>
+<SayFloat message="{floatenvtest}"/>
 ```
