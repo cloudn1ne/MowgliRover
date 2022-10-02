@@ -188,3 +188,4 @@ void WaitForOdom::onHalted()
     ROS_INFO_STREAM("[ WaitForOdom: interrupted - FAILURE ]");    
 #endif      
 }
+

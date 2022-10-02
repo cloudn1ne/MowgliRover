@@ -143,6 +143,4 @@ class WaitForOdom : public BT::StatefulActionNode
     bool *_odom_valid;
 };
 
-
-
 #endif // BT_STATUS_H

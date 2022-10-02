@@ -38,6 +38,26 @@ class SaySomething : public BT::SyncActionNode
     }
 };
 
+// Example of custom SyncActionNode (synchronous action)
+// with an input port.
+class SayString : public BT::SyncActionNode
+{
+  public:
+    SayString(const std::string& name, const BT::NodeConfiguration& config)
+      : BT::SyncActionNode(name, config)
+    {
+    }
+
+    // You must override the virtual function tick()
+    NodeStatus tick() override;
+
+    // It is mandatory to define this static method.
+    static BT::PortsList providedPorts()
+    {
+        return{ BT::InputPort<std::string>("message") };
+    }
+};
+
 
 // Example of custom SyncActionNode (synchronous action)
 // with an input port.

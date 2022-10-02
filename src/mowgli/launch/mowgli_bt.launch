@@ -47,9 +47,10 @@
 
  <node pkg="mower_map" type="mower_map_service" name="map_service" output="screen"/>
 
-
  <!-- Mowgli Behavior Tree -->
- <node pkg="mowgli" type="mowgli_bt" name="mowgli_bt" required="true" output="screen" />
+ <node pkg="mowgli" type="mowgli_bt" name="mowgli_bt" required="true" output="screen">
+   <param name="xml_path" value="$(find mowgli)/config/bt/tree.xml" />
+ </node>
 
 
  <node pkg="slic3r_coverage_planner" type="slic3r_coverage_planner" name="slic3r_coverage_planner" output="screen"/>

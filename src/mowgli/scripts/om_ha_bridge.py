@@ -48,7 +48,7 @@ gps_topic = "/ublox/fix"
 
 # ROS Topic Callback (mower/current_behaviour)
 def ros_callback(data):
-    print(f"om_ha_bridge.py: Relaying Current Behaviour `{data.data}` to MQTT")
+    #print(f"om_ha_bridge.py: Relaying Current Behaviour `{data.data}` to MQTT")
     client = connect_mqtt()
     result = client.publish(mqtt_current_behaviour_topic, data.data)
     status = result[0]

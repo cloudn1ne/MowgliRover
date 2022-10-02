@@ -74,4 +74,17 @@ BT::NodeStatus SayBool::tick()
     return BT::NodeStatus::SUCCESS;
 }
 
+
+BT::NodeStatus SayString::tick()
+{
+    auto msg = getInput<std::string>("message");
+    if (!msg)
+    {
+        throw BT::RuntimeError( "missing required input [message]: ", msg.error() );
+    }
+
+    std::cout << "Robot says: " << msg.value() << std::endl;
+    return BT::NodeStatus::SUCCESS;
+}
+
 }

@@ -20,6 +20,10 @@
 
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"       // ZeroMQ for Groot
+#include "loggers/bt_statelogger.h"                             // custom logger that ends out state transitions via a ROS Topic
+//#include "behaviortree_cpp_v3/loggers/bt_file_logger.h"         // File logger
+// #include "behaviortree_cpp_v3/loggers/bt_minitrace_logger.h"    // JSON logger
+
 
 // ROS
 #include "ros/ros.h"
@@ -58,6 +62,7 @@
 #include "bt_approachpose.h"
 #include "bt_followpath.h"
 #include "bt_trimposes.h"
+#include "bt_env.h"
 
 
 // BT primitives
@@ -343,7 +348,7 @@ int main(int argc, char **argv)
 
     // bt_nodes 
     using namespace DummyNodes;    
-    factory.registerNodeType<SaySomething>("SaySomething");
+    factory.registerNodeType<SaySomething>("SayString");
     factory.registerNodeType<SayFloat>("SayFloat");
     factory.registerNodeType<SayInt>("SayInt");
     factory.registerNodeType<SayBool>("SayBool");
@@ -484,15 +489,59 @@ int main(int argc, char **argv)
     };
     factory.registerBuilder<GetHighLevelCommand>( "GetHighLevelCommand", builder_GetHighLevelCommand);
 
+    // bt_env (GetEnvString)    
+    NodeBuilder builder_GetEnvString =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<GetEnvString>( name, config );
+    };
+    factory.registerBuilder<GetEnvString>( "GetEnvString", builder_GetEnvString);
 
+    // bt_env (GetEnvInt)    
+    NodeBuilder builder_GetEnvInt =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<GetEnvInt>( name, config );
+    };
+    factory.registerBuilder<GetEnvInt>( "GetEnvInt", builder_GetEnvInt);
+
+    // bt_env (GetEnvFloat)    
+    NodeBuilder builder_GetEnvFloat =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<GetEnvFloat>( name, config );
+    };
+    factory.registerBuilder<GetEnvFloat>( "GetEnvFloat", builder_GetEnvFloat);
+
+    // bt_env (GetEnvBoolAsInt)    
+    NodeBuilder builder_GetEnvBoolAsInt =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<GetEnvBoolAsInt>( name, config );
+    };
+    factory.registerBuilder<GetEnvBoolAsInt>( "GetEnvBoolAsInt", builder_GetEnvBoolAsInt);
 
     // Load tree from XML
-    auto tree = factory.createTreeFromFile("../MowgliRover/src/mowgli/src/tree.xml");
+    std::string xml_path;    
+    if(!paramNh.getParam("xml_path", xml_path)) {
+        ROS_ERROR_STREAM("mowgli_bt: xml_path parameter missing.");
+        return 1;
+    }
+
+    ROS_INFO_STREAM("mowgli_bt: Loading " << xml_path);
+    auto tree = factory.createTreeFromFile(xml_path);
     PublisherZMQ publisher_zmq(tree); // for Groot
 
+    StateLogger state_logger(tree, pubCurrentState);
+
+    // This logger stores the execution time of each node
+    // MinitraceLogger logger_minitrace(tree, "/tmp/bt_trace.json");
+
+    // File Logger
+    //FileLogger logger_file(tree, "/tmp/bt_trace.fbl");
+
     ros::Rate r(1); // ROS loop rate
-    while (ros::ok()) {
-       //  ROS_INFO_STREAM("gstate_blade_motor_enabled: " << gstate_blade_motor_enabled);
+    while (ros::ok()) {       
         r.sleep();        
         tree.tickRoot();
     }

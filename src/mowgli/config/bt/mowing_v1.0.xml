@@ -20,7 +20,7 @@
           <IsCharging/>  <!-- IF isCharging-->
           <DriveBackward distance="1.0" planner="DockingFTCPlanner"/>  <!-- THEN -->    
           <ForceSuccess> <!-- force SUCCESS even if we weren't docked so the sequence can continue -->
-            <SaySomething message="Not undocking as we are not in the Dock currently" />
+            <SayString message="Not undocking as we are not in the Dock currently" />
           </ForceSuccess>
         </IfThenElse>
         <SubTree ID="WaitForOdom"/>
@@ -44,38 +44,33 @@
                       <GetMowPath path_index="{path_index}" mowplan="{mowplan}" path_out="{mowpath}"/>                      
                         <RetryUntilSuccessful num_attempts="5" name="retry_ApproachFirstPoseOfMowPath">        
                             <Sequence>
-                                <SubTree ID="WaitForOdom"/>
+                                <SubTree ID="WaitForOdom"/> <!-- Wait for /odom to be valid -->
                                 <Fallback name="ApproachFirstPoseFallback">
-                                    <Sequence name="seq_ApproachFirstPose">        
+                                    <Sequence name="seq_ApproachFirstPose">         
                                         <GetFirstPose path="{mowpath}" pose_out="{first_pose}"/>
-                                        <ApproachPose pose="{first_pose}" planner="FTCPlanner"/>            
+                                        <ApproachPose pose="{first_pose}" planner="FTCPlanner"/>
                                     </Sequence>
-                                    <ForceFailure> <!--force next retry attempt, by failing Fallback -->
+                                    <ForceFailure> <!--force next RetryUntilSuccessful attempt, by failing Fallback -->
                                         <TrimPoses path="{mowpath}" begin="0" end="5"/> <!-- we trim 5 poses of the beginning of the mowpath, and reattempt to approach the new first_pose -->
                                     </ForceFailure>
                                 </Fallback>
                                 <Sequence name="seq_FollowMowPath">
-                                        <BladeMotorControl enable="0"/>
-                                        <Fallback name="ApproachFirstPoseFallback">  <!-- WDE Do -->
-                                              <ReactiveSequence>
-                                                    <FollowPath path="{mowpath}" planner="FTCPlanner" current_index="{mowpath_index}"/> 
-                                              </ReactiveSequence>                                       
-                                              <ForceFailure> <!--force next retry attempt, by failing Fallback -->
-                                                  <Sequence>
-                                                    <TrimPoses path="{mowpath}" begin="0" end="{mowpath_index}"/> <!-- trim already completed poses from the current mowpath -->
-                                                    <BladeMotorControl enable="0"/>
-                                                  </Sequence>
-                                              </ForceFailure>
-                                        </Fallback>                                                     
-                                        <BladeMotorControl enable="0"/>
+                                        <BladeMotorControl enable="{enable_mower}"/> <!-- Enable Blade Motor for Mow -->
+                                        <Fallback name="ApproachFirstPoseFallback">  
+                                              <FollowPath path="{mowpath}" planner="FTCPlanner" current_index="{mowpath_index}"/> <!-- Mow -->
+                                              <TrimPoses path="{mowpath}" begin="0" end="{mowpath_index}"/> <!--  Fallback: Trim already completed poses from the current mowpath -->                                                                                                
+                                        </Fallback>  
+                                        <ForceFailure> <!--force next RetryUntilSuccessful attempt, by failing Fallback -->
+                                          <BladeMotorControl enable="0"/> <!-- Disable Blade Motor after Mow -->
+                                        </ForceFailure>
                                 </Sequence>
                             </Sequence>
                         </RetryUntilSuccessful>                           
                     </Sequence>
-                    <SaySomething message="For iterateMowPaths ended ;-)" />
+                    <SayString message="For iterateMowPaths ended ;-)" />
                 </ForLoop>
             </Sequence>
-            <SaySomething message="For iterateMowAreas loop ended ;-)" />
+            <SayString message="For iterateMowAreas loop ended ;-)" />
         </ForLoop>
         <BladeMotorControl enable="0"/>      
       </Sequence>    
