@@ -10,5 +10,5 @@ else
 fi
 
 cd ~/MowgliRover
-roslaunch mowgli mowgli_bt2.launch
+roslaunch mowgli mowgli_bt.launch
 cd -
