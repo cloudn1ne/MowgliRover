@@ -1,5 +1,11 @@
 # Testing branch
+## Additional reqs compared to main
 
+```
+sudo apt-get -y install libxml2-utils
+```
+
+## Checkout
 (assumes that you have checked out MowgliRover in ~/MowgliRover)
 
 ```
