@@ -16,6 +16,9 @@
 <root>
     <BehaviorTree ID="Mowing">        
       <Sequence name="Mowing">
+        <Sequence name="seq_EnvVars">
+          <GetEnvBool var="OM_ENABLE_MOWER" bool_out="{enable_mower}"/> <!-- blackboard variables are only valid within the same subtree, so we need to pull them in here -->
+        </Sequence>
         <IfThenElse> 
           <IsCharging/>  <!-- IF isCharging-->
           <DriveBackward distance="1.0" planner="DockingFTCPlanner"/>  <!-- THEN -->    
@@ -42,8 +45,9 @@
                 > 
                     <Sequence name="iterateMowPaths">  
                       <GetMowPath path_index="{path_index}" mowplan="{mowplan}" path_out="{mowpath}"/>                      
-                        <RetryUntilSuccessful num_attempts="5" name="retry_ApproachFirstPoseOfMowPath">        
-                            <Sequence>
+                      <BladeMotorControl enable="0"/> <!-- Disable Blade Motor before and after Mow -->
+                      <RetryUntilSuccessful num_attempts="5" name="retry_ApproachFirstPoseOfMowPath">        
+                            <Sequence>                                
                                 <SubTree ID="WaitForOdom"/> <!-- Wait for /odom to be valid -->
                                 <Fallback name="ApproachFirstPoseFallback">
                                     <Sequence name="seq_ApproachFirstPose">         
@@ -54,18 +58,18 @@
                                         <TrimPoses path="{mowpath}" begin="0" end="5"/> <!-- we trim 5 poses of the beginning of the mowpath, and reattempt to approach the new first_pose -->
                                     </ForceFailure>
                                 </Fallback>
-                                <Sequence name="seq_FollowMowPath">
+                                <Sequence name="seq_FollowMowPath">                                        
                                         <BladeMotorControl enable="{enable_mower}"/> <!-- Enable Blade Motor for Mow -->
                                         <Fallback name="ApproachFirstPoseFallback">  
                                               <FollowPath path="{mowpath}" planner="FTCPlanner" current_index="{mowpath_index}"/> <!-- Mow -->
-                                              <TrimPoses path="{mowpath}" begin="0" end="{mowpath_index}"/> <!--  Fallback: Trim already completed poses from the current mowpath -->                                                                                                
-                                        </Fallback>  
-                                        <ForceFailure> <!--force next RetryUntilSuccessful attempt, by failing Fallback -->
-                                          <BladeMotorControl enable="0"/> <!-- Disable Blade Motor after Mow -->
-                                        </ForceFailure>
+                                              <ForceFailure> <!--force next RetryUntilSuccessful attempt, by failing Fallback -->
+                                                <TrimPoses path="{mowpath}" begin="0" end="{mowpath_index}"/> <!--  Fallback: Trim already completed poses from the current mowpath -->                                                                                                
+                                              </ForceFailure>
+                                        </Fallback>                                          
+                                        <BladeMotorControl enable="0"/> <!-- Disable Blade Motor after Mow (FollowPath was successfull) -->                                        
                                 </Sequence>
                             </Sequence>
-                        </RetryUntilSuccessful>                           
+                       </RetryUntilSuccessful>                           
                     </Sequence>
                     <SayString message="For iterateMowPaths ended ;-)" />
                 </ForLoop>

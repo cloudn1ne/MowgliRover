@@ -32,7 +32,7 @@
 #include "bt_env.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-// #define BT_DEBUG 1
+#define BT_DEBUG 1
 
 /// @brief Get string  from environment variable named {name} and store in {str_out}
 /// @return {str_out}
@@ -53,9 +53,7 @@ BT::NodeStatus GetEnvString::tick()
     }
     else
     {   
-#ifdef BT_DEBUG        
-    ROS_INFO_STREAM("mowgli_bt: GetEnvString::tick() envvar='" << var << "' -> FAILURE");
-#endif                
+        ROS_ERROR_STREAM("mowgli_bt: GetEnvString::tick() envvar='" << var << "' not found -> FAILURE");               
         setOutput("str_out", std::string(""));
         return BT::NodeStatus::FAILURE;
     }
@@ -81,9 +79,7 @@ BT::NodeStatus GetEnvInt::tick()
     }
     else
     {   
-#ifdef BT_DEBUG        
-    ROS_INFO_STREAM("mowgli_bt: GetEnvInt::tick() envvar='" << var << "' -> FAILURE");
-#endif                
+        ROS_ERROR_STREAM("mowgli_bt: GetEnvInt::tick() envvar='" << var << "' not found -> FAILURE");  
         setOutput("int_out", std::string(""));
         return BT::NodeStatus::FAILURE;
     }
@@ -101,17 +97,45 @@ BT::NodeStatus GetEnvFloat::tick()
         float val;
         val = atof(getenv( var.c_str() ));
 #ifdef BT_DEBUG        
-    ROS_INFO_STREAM("mowgli_bt: GetEnvFloat::tick() envvar='" << var << "' = " << val << " -> SUCCESS");
+        ROS_INFO_STREAM("mowgli_bt: GetEnvFloat::tick() envvar='" << var << "' = " << val << " -> SUCCESS");
 #endif        
         setOutput("float_out", val);
         return BT::NodeStatus::SUCCESS;
     }
     else
     {   
-#ifdef BT_DEBUG        
-    ROS_INFO_STREAM("mowgli_bt: GetEnvFloat::tick() envvar='" << var << "' -> FAILURE");
-#endif                
+        ROS_ERROR_STREAM("mowgli_bt: GetEnvFloat::tick() envvar='" << var << "' not found -> FAILURE");            
         setOutput("float_out", std::string(""));
+        return BT::NodeStatus::FAILURE;
+    }
+}
+
+/// @brief Get a bool from environment variable named {name} and store in {str_out}
+/// @return {bool_out}
+BT::NodeStatus GetEnvBool::tick()
+{   
+    std::string var;
+    getInput("var", var);
+  
+    if ( getenv( var.c_str() ))
+    {
+        bool val = false; // default false
+
+        if (strcasecmp(getenv(var.c_str()), std::string("true").c_str()) == 0)        
+        {
+            val = true;
+        }
+
+#ifdef BT_DEBUG        
+        ROS_INFO_STREAM("mowgli_bt: GetEnvBool::tick() envvar='" << var << "' = " << val << " -> SUCCESS");
+#endif        
+        setOutput("bool_out", val);
+        return BT::NodeStatus::SUCCESS;
+    }
+    else
+    {   
+        ROS_ERROR_STREAM("mowgli_bt: GetEnvBool::tick() envvar='" << var << "' not found -> FAILURE");            
+        setOutput("bool_out", std::string(""));
         return BT::NodeStatus::FAILURE;
     }
 }
@@ -133,17 +157,15 @@ BT::NodeStatus GetEnvBoolAsInt::tick()
         }
 
 #ifdef BT_DEBUG        
-    ROS_INFO_STREAM("mowgli_bt: GetEnvBoolAsInt::tick() envvar='" << var << "' = " << val << " -> SUCCESS");
+        ROS_INFO_STREAM("mowgli_bt: GetEnvBoolAsInt::tick() envvar='" << var << "' = " << val << " -> SUCCESS");
 #endif        
         setOutput("int_out", val);
         return BT::NodeStatus::SUCCESS;
     }
     else
-    {   
-#ifdef BT_DEBUG        
-    ROS_INFO_STREAM("mowgli_bt: GetEnvBoolAsInt::tick() envvar='" << var << "' -> FAILURE");
-#endif                
-        setOutput("int_out", std::string(""));
+    {      
+        ROS_ERROR_STREAM("mowgli_bt: GetEnvBoolAsInt::tick() envvar='" << var << "' not found -> FAILURE");
+        setOutput("int_out", -1);
         return BT::NodeStatus::FAILURE;
     }
 }

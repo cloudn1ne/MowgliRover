@@ -32,7 +32,7 @@ class BladeMotorControl : public BT::StatefulActionNode
     virtual void callSvc(bool requested_state);
 
   private:    
-    uint8_t requested_state;
+    bool requested_state;
     ros::ServiceClient _svcClient;
     bool *_blade_motor_enabled;
 };

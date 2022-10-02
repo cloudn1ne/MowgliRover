@@ -11,8 +11,6 @@ class GetEnvString : public BT::SyncActionNode
       : SyncActionNode(name, config)      
     {
     }
-
-    // It is mandatory to define this static method.
   
     static BT::PortsList providedPorts()
     {
@@ -34,8 +32,6 @@ class GetEnvInt : public BT::SyncActionNode
       : SyncActionNode(name, config)      
     {
     }
-
-    // It is mandatory to define this static method.
   
     static BT::PortsList providedPorts()
     {
@@ -57,14 +53,34 @@ class GetEnvFloat : public BT::SyncActionNode
       : SyncActionNode(name, config)      
     {
     }
-
-    // It is mandatory to define this static method.
-  
+ 
     static BT::PortsList providedPorts()
     {
         return{ 
                 BT::InputPort<std::string>("var"),
                 BT::OutputPort<float>("float_out") 
+              };
+    }
+
+    BT::NodeStatus tick() override;
+  private:      
+    
+};
+
+class GetEnvBool : public BT::SyncActionNode
+{
+  public:    
+    GetEnvBool(const std::string& name, const BT::NodeConfiguration& config)                       
+      : SyncActionNode(name, config)      
+    {
+    }
+
+    
+    static BT::PortsList providedPorts()
+    {
+        return{ 
+                BT::InputPort<std::string>("var"),
+                BT::OutputPort<bool>("bool_out") 
               };
     }
 

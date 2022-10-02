@@ -513,6 +513,14 @@ int main(int argc, char **argv)
     };
     factory.registerBuilder<GetEnvFloat>( "GetEnvFloat", builder_GetEnvFloat);
 
+    // bt_env (GetEnvBool)    
+    NodeBuilder builder_GetEnvBool =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<GetEnvBool>( name, config );
+    };
+    factory.registerBuilder<GetEnvBool>( "GetEnvBool", builder_GetEnvBool);
+
     // bt_env (GetEnvBoolAsInt)    
     NodeBuilder builder_GetEnvBoolAsInt =
     [](const std::string& name, const NodeConfiguration& config)

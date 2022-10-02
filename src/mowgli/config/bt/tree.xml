@@ -11,8 +11,7 @@
 <root main_tree_to_execute = "MainTree" >
     <include ros_pkg="mowgli" path="config/bt/docking_v1.0.xml"/>
     <include ros_pkg="mowgli" path="config/bt/mowing_v1.0.xml"/>
-    <include ros_pkg="mowgli" path="config/bt/envvars.xml"/>
-
+    
     <BehaviorTree ID="WaitForOdom">
       <Sequence>
         <Timeout msec="600000">  <!-- Wait for up to 10min to regain /odom (GPS fix)-->
@@ -39,7 +38,7 @@
     </BehaviorTree>
 
     <BehaviorTree ID="hlc_PAUSE">           
-      <Sequence name="PAUSE">
+      <Sequence name="PAUSE">      
         <DriveForward distance="1.0" planner="FTCPlanner"/>
       </Sequence>    
     </BehaviorTree>
@@ -58,8 +57,7 @@
     </BehaviorTree>
 
      <BehaviorTree ID="MainTree">
-        <Sequence name="root_sequence">         
-            <SubTree ID="EnvVars"/>
+        <Sequence name="root_sequence">                     
             <GetHighLevelCommand cmd_out="{high_level_command}"/>
             <SayString message="{high_level_command}" />
             <Switch4 
