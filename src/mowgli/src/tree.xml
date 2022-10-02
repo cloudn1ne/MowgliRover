@@ -12,11 +12,20 @@
     <include ros_pkg="mowgli" path="config/bt/docking_v1.0.xml"/>
     <include ros_pkg="mowgli" path="config/bt/mowing_v1.0.xml"/>
 
+    <BehaviorTree ID="WaitForOdom">
+      <Sequence>
+        <Timeout msec="600000">  <!-- Wait for up to 10min to regain /odom (GPS fix)-->
+            <WaitForOdom/>
+        </Timeout>
+        <SaySomething message="============> ODOM is okay again <===========" />
+      </Sequence>
+    </BehaviorTree>
+
     <BehaviorTree ID="TurnOffBladeWhenDocked">
       <Sequence name="Turn OFF Blade Motor when docked">
         <IsCharging/>        
         <IsMowing/>        
-        <MowControl enable="0"/>        
+        <BladeMotorControl enable="0"/>        
       </Sequence>
     </BehaviorTree>
 
@@ -28,10 +37,15 @@
       <SubTree ID="Docking"/> <!-- docking_v1X.X.xml -->
     </BehaviorTree>
 
-    <BehaviorTree ID="hlc_PAUSE">
+    <BehaviorTree ID="hlc_PAUSE"> 
+      <Sequence>
+        <SubTree ID="WaitForOdom"/>
+      </Sequence>
+    <!--      
       <Sequence name="PAUSE">
         <DriveForward distance="1.0" planner="FTCPlanner"/>
       </Sequence>
+      -->
     </BehaviorTree>
 
     <BehaviorTree ID="hlc_STOP">
@@ -49,7 +63,7 @@
 
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">            
-            <GetHighLevelCommand output_key="{high_level_command}"/>
+            <GetHighLevelCommand cmd_out="{high_level_command}"/>
             <SaySomething message="{high_level_command}" />
             <Switch4 
                 name="High Level Command Switch"

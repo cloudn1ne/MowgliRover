@@ -16,11 +16,11 @@ class DriveForward : public BT::StatefulActionNode
 {
   public:    
     DriveForward(const std::string& name, const BT::NodeConfiguration& config,
-               actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClient,
+               actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *_mbfExePathClient,
                nav_msgs::Odometry *odom               
                )
       : StatefulActionNode(name, config),
-      _mbfClient(mbfClient),
+      _mbfExePathClient(_mbfExePathClient),
       _odom(odom)      
     {
     }
@@ -44,7 +44,7 @@ class DriveForward : public BT::StatefulActionNode
 
   private:        
     ros::ServiceClient _svcClient;
-    actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *_mbfClient;
+    actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *_mbfExePathClient;
     nav_msgs::Odometry *_odom;
 };
 

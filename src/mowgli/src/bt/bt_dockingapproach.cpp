@@ -6,6 +6,19 @@
  *
  * v1.0: inital release
  *
+ * Arguments:
+ * 
+ *    <DockingApproach docking_approach_distance="<distance_in_meter>" planner="<planner_name>"/>
+ * 
+ * Description:
+ * 
+ *    Calculate a path that extends docking_approach_distance before the docking point (2nd X press during map recording),
+ *    and follow the path in the opposite direction (towards the docking station).
+ * 
+ *    Note: docking_approach_distance should match the value used in the <DockingApproachPoint> node
+ *    
+ *    For this node to return SUCCESS, the path needs to be followed to the end (2nd X press pose).
+ * 
  */
 
 #include "bt_dockingapproach.h"
@@ -14,7 +27,7 @@
 
 #define BT_DEBUG 1
 
-#define DOCKING_POINTS_PER_M   10.0
+#define DOCKING_POSES_PER_M   10.0
 
 /// @brief Approach Docking station (but does not actually dock)
 BT::NodeStatus DockingApproach::onStart()
@@ -44,11 +57,11 @@ BT::NodeStatus DockingApproach::onStart()
       nav_msgs::Path dockingApproachPath;      
 
       // we start at the DockingApproachPoint, and we use <dockingapproach_point_count> poses to sneak up to our dockingPose 
-      uint8_t dockingapproach_point_count = docking_approach_distance * DOCKING_POINTS_PER_M;
+      uint8_t dockingapproach_point_count = docking_approach_distance * DOCKING_POSES_PER_M;
       for (int i = 0; i < dockingapproach_point_count; i++) {          
             geometry_msgs::PoseStamped dockingApproachPose = dockingPoseStamped;        
-            dockingApproachPose.pose.position.x -= cos(yaw) * ((dockingapproach_point_count - i) / DOCKING_POINTS_PER_M);
-            dockingApproachPose.pose.position.y -= sin(yaw) * ((dockingapproach_point_count - i) / DOCKING_POINTS_PER_M);                   
+            dockingApproachPose.pose.position.x -= cos(yaw) * ((dockingapproach_point_count - i) / DOCKING_POSES_PER_M);
+            dockingApproachPose.pose.position.y -= sin(yaw) * ((dockingapproach_point_count - i) / DOCKING_POSES_PER_M);                   
 #ifdef BT_DEBUG
             ROS_INFO_STREAM("[ DockingApproach: STARTING ] path pose (" << i << ") x = "<< dockingApproachPose.pose.position.x << " y= " << dockingApproachPose.pose.position.y << " yaw = " << yaw*180/M_PI);
 #endif                 
@@ -112,7 +125,8 @@ BT::NodeStatus DockingApproach::onRunning()
 
 void DockingApproach::onHalted() 
 {
-      // nothing to do here...
+      // stop MBF
+      _mbfExePathClient->cancelAllGoals();
 #ifdef BT_DEBUG              
       ROS_INFO_STREAM("[ DockingApproach: interrupted ]");    
 #endif      

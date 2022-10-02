@@ -17,41 +17,6 @@ namespace DummyNodes
 
 using BT::NodeStatus;
 
-NodeStatus CheckBattery();
-
-NodeStatus CheckTemperature();
-NodeStatus SayHello();
-
-class GripperInterface
-{
-  public:
-    GripperInterface() : _opened(true)
-    {
-    }
-
-    NodeStatus open();
-
-    NodeStatus close();
-
-  private:
-    bool _opened;
-};
-
-//--------------------------------------
-
-// Example of custom SyncActionNode (synchronous action)
-// without ports.
-class ApproachObject : public BT::SyncActionNode
-{
-  public:
-    ApproachObject(const std::string& name) :
-        BT::SyncActionNode(name, {})
-    {
-    }
-
-    // You must override the virtual function tick()
-    NodeStatus tick() override;
-};
 
 // Example of custom SyncActionNode (synchronous action)
 // with an input port.
@@ -73,8 +38,6 @@ class SaySomething : public BT::SyncActionNode
     }
 };
 
-//Same as class SaySomething, but to be registered with SimpleActionNode
-NodeStatus SaySomethingSimple(BT::TreeNode& self);
 
 // Example of custom SyncActionNode (synchronous action)
 // with an input port.
@@ -193,15 +156,7 @@ class SleepNode : public BT::StatefulActionNode
 };
 
 inline void RegisterNodes(BT::BehaviorTreeFactory& factory)
-{
-    static GripperInterface grip_singleton;
-
-    factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
-    factory.registerSimpleCondition("CheckTemperature", std::bind(CheckTemperature));
-    factory.registerSimpleAction("SayHello", std::bind(SayHello));
-    factory.registerSimpleAction("OpenGripper", std::bind(&GripperInterface::open, &grip_singleton));
-    factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &grip_singleton));
-    factory.registerNodeType<ApproachObject>("ApproachObject");
+{   
     factory.registerNodeType<SaySomething>("SaySomething");
 }
 

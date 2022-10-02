@@ -151,7 +151,7 @@ add_executable(mowgli_bt
                src/mowgli_bt.cpp 
                src/bt/bt_getmowplan.cpp
                src/bt/bt_getmowpath.cpp
-               src/bt/bt_mowpathfollow.cpp
+               src/bt/bt_followpath.cpp
                src/bt/bt_docking.cpp
                src/bt/bt_dockingapproach.cpp
                src/bt/bt_dockingapproachpoint.cpp
@@ -159,11 +159,11 @@ add_executable(mowgli_bt
                src/bt/bt_driveforward.cpp
                src/bt/bt_nodes.cpp
                src/bt/bt_gpscontrol.cpp
-               src/bt/bt_mowcontrol.cpp
+               src/bt/bt_blademotorcontrol.cpp
                src/bt/bt_status.cpp
                src/bt/bt_forloop.cpp
                src/bt/bt_getfirstpose.cpp
-               src/bt/bt_mowpathapproachpoint.cpp
+               src/bt/bt_approachpose.cpp
                src/bt/bt_trimposes.cpp
 )
 add_executable(mowgli_proxy src/mowgli_proxy.cpp)

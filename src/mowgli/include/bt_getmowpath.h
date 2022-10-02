@@ -19,7 +19,7 @@ class GetMowPath : public BT::SyncActionNode
          return{ 
                 BT::InputPort<int>("path_index"),
                 BT::InputPort<std::vector<slic3r_coverage_planner::Path>>("mowplan"),
-                BT::OutputPort<nav_msgs::Path>("mowpath_out")
+                BT::OutputPort<nav_msgs::Path>("path_out")
                };
     }
   

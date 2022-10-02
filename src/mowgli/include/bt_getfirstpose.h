@@ -19,7 +19,7 @@ class GetFirstPose : public BT::SyncActionNode
     static BT::PortsList providedPorts()
     {
          return{
-                BT::InputPort<nav_msgs::Path>("mowpath"),
+                BT::InputPort<nav_msgs::Path>("path"),
                 BT::OutputPort<geometry_msgs::PoseStamped>("pose_out")
                };
     }

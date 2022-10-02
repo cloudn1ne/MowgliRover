@@ -14,13 +14,9 @@
 #include "mower_map/GetDockingPointSrv.h"
 
 
-// This is an asynchronous operation that will run in a separate thread.
-// It requires the input port "goal".
-
 class DockingApproach : public BT::StatefulActionNode
 {
   public:
-    // Any TreeNode with ports must have a constructor with this signature
     DockingApproach(const std::string& name, const BT::NodeConfiguration& config,
                actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfExePathClient,               
                ros::ServiceClient svcClient    

@@ -6,6 +6,18 @@
  *
  * v1.0: inital release
  *
+ *  
+ * Arguments:
+ * 
+ *    <GetMowPlan area_index="{area_index}" mowplan="{mowplan}"/>
+ * 
+ * Description:
+ * 
+ *    Request a given {area_index} from the mapserver, perform the calculation of the mow angle, and slice all mow paths.
+ *    The generated mowplan (array of mow paths) is saved to {mowplan}
+ * 
+ *    For this node to return SUCCESS, angle calculation and slicing needs to be successfull.
+ * 
  */
 #include "bt_getmowplan.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -73,25 +85,7 @@ BT::NodeStatus GetMowPlan::tick()
             return BT::NodeStatus::FAILURE;
       }
 
-   //   std::vector<slic3r_coverage_planner::Path> currentMowingPaths;
-      // serialize planPath.response.paths response
-      /*
-      uint32_t serial_size = ros::serialization::serializationLength(planPath.response.paths);
-      boost::shared_array<uint8_t> buffer(new uint8_t[serial_size]);
-      ros::serialization::OStream stream(buffer.get(), serial_size);
-      ros::serialization::serialize(stream, planPath.response.paths);
-
-      std::vector<std::string> list;
-      list.push_back("Hello");
-      list.push_back("World!");
-
-
-      std::string str = boost::algorithm::join(list, ";");
-
-      ROS_INFO_STREAM("mowgli_bt: GetMowPlay(): serialized response, size = " << serial_size );
-*/
-    //  currentMowingPaths = planPath.response.paths;   // array of nav_msgs/Path
-
+  
       setOutput("mowplan", planPath.response.paths );    
       return BT::NodeStatus::SUCCESS;
 }

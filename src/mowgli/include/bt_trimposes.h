@@ -20,7 +20,7 @@ class TrimPoses : public BT::SyncActionNode
          return{
                 BT::InputPort<int>("begin"),
                 BT::InputPort<int>("end"),
-                BT::BidirectionalPort<nav_msgs::Path>("mowpath")                
+                BT::BidirectionalPort<nav_msgs::Path>("path")                
                };
     }
   

@@ -6,6 +6,16 @@
  *
  * v1.0: inital release
  *
+ * 
+ * Arguments:
+ * 
+ *    <Docking docking_distance="<distance_in_meter>" planner="<planner_name>"/>
+ * 
+ * Description:
+ * 
+ *    By default a path with 10 poses per meter will be created and followed. 
+ *    For this node to return SUCCESS, charge voltage needs to be detected during driving of the path, or when finished.
+ * 
  */
 #include "bt_docking.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -13,7 +23,7 @@
 
 #define BT_DEBUG 1
 
-#define DOCKING_POINTS_PER_M   10.0
+#define DOCKING_POSES_PER_M   10.0
 
 /// @brief Drive forward into docking station
 BT::NodeStatus Docking::onStart()
@@ -41,10 +51,10 @@ BT::NodeStatus Docking::onStart()
       // create a path out of n individual poses       
       nav_msgs::Path dockingPath;      
   
-      uint16_t docking_point_count = docking_distance * DOCKING_POINTS_PER_M;
+      uint16_t docking_point_count = docking_distance * DOCKING_POSES_PER_M;
       for (int i = 0; i < docking_point_count; i++) {                  
-            dockingPoseStamped.pose.position.x += cos(yaw) * (i / DOCKING_POINTS_PER_M);
-            dockingPoseStamped.pose.position.y += sin(yaw) * (i / DOCKING_POINTS_PER_M);
+            dockingPoseStamped.pose.position.x += cos(yaw) * (i / DOCKING_POSES_PER_M);
+            dockingPoseStamped.pose.position.y += sin(yaw) * (i / DOCKING_POSES_PER_M);
 #ifdef BT_DEBUG
             ROS_INFO_STREAM("[ Docking: STARTING ] docking path pose (" << i << ") x = "<< dockingPoseStamped.pose.position.x << " y= " << dockingPoseStamped.pose.position.y << " yaw = " << yaw*180/M_PI);
 #endif            
@@ -85,7 +95,7 @@ BT::NodeStatus Docking::onRunning()
 #ifdef BT_DEBUG                                                                  
                                                                   ROS_INFO_STREAM("Got a voltage of: " << *_v_charge << "V - docking is now completed");
                                                                   ROS_INFO_STREAM("[ DockingApproach: SUCCESS ]");
-#endif                                                                                                                                    
+#endif                                                                                                                                                                                               
                                                                   return BT::NodeStatus::SUCCESS; 
                                                               }
                                                               else
@@ -133,7 +143,8 @@ BT::NodeStatus Docking::onRunning()
 
 void Docking::onHalted() 
 {
-      // nothing to do here...
+      // stop MBF
+      _mbfClient->cancelAllGoals();
 #ifdef BT_DEBUG              
       ROS_INFO_STREAM("[ Docking: interrupted ]");    
 #endif      

@@ -5,15 +5,25 @@
  * https://github.com/cloudn1ne/MowgliRover
  *
  * v1.0: inital release
+ * 
+ * Arguments:
+ * 
+ *    <DriveForward distance="<distance_in_meter>" planner="<planner_name>"/>
+ * 
+ * Description:
+ * 
+ *    Calculate a path and drive distance forward from the current pose.
  *
+ *    For this node to return SUCCESS, the end pose of the path needs to be reached..
+ * 
  */
-
+ 
 #include "bt_driveforward.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 #define BT_DEBUG 1
 
-#define POINTS_PER_M   10.0
+#define POSES_PER_M   10.0
 
 /// @brief Drive backwards from the current posistion for <distance> meters using <planner>
 /// @return NodeStatus
@@ -46,11 +56,11 @@ BT::NodeStatus DriveForward::onStart()
       geometry_msgs::PoseStamped DriveForwardPose;
       DriveForwardPose.header = _odom->header;           
       
-      uint16_t point_count = distance * POINTS_PER_M;
+      uint16_t point_count = distance * POSES_PER_M;
       for (int i = 0; i < point_count; i++) {    
             DriveForwardPose.pose = _odom->pose.pose; 
-            DriveForwardPose.pose.position.x += cos(yaw) * (i / POINTS_PER_M);
-            DriveForwardPose.pose.position.y += sin(yaw) * (i / POINTS_PER_M);
+            DriveForwardPose.pose.position.x += cos(yaw) * (i / POSES_PER_M);
+            DriveForwardPose.pose.position.y += sin(yaw) * (i / POSES_PER_M);
 #ifdef BT_DEBUG
             ROS_INFO_STREAM("[ DriveForward: STARTING ] path pose (" << i << ") x = "<< DriveForwardPose.pose.position.x << " y= " << DriveForwardPose.pose.position.y << " yaw = " << yaw*180/M_PI);
 #endif            
@@ -67,7 +77,7 @@ BT::NodeStatus DriveForward::onStart()
       exePathGoal.tolerance_from_action = true;
       exePathGoal.controller = planner;
       
-      _mbfClient->sendGoal(exePathGoal);
+      _mbfExePathClient->sendGoal(exePathGoal);
       
       return BT::NodeStatus::RUNNING;
 }
@@ -77,7 +87,7 @@ BT::NodeStatus DriveForward::onRunning()
 {
       actionlib::SimpleClientGoalState current_status(actionlib::SimpleClientGoalState::PENDING);
 
-      current_status = _mbfClient->getState();
+      current_status = _mbfExePathClient->getState();
 
 #ifdef BT_DEBUG        
       printNavState(current_status.state_);
@@ -104,7 +114,8 @@ BT::NodeStatus DriveForward::onRunning()
 
 void DriveForward::onHalted() 
 {
-      // nothing to do here...
+        // stop MBF
+      _mbfExePathClient->cancelAllGoals();
 #ifdef BT_DEBUG              
       ROS_INFO_STREAM("[ DriveForward: interrupted ]");    
 #endif      

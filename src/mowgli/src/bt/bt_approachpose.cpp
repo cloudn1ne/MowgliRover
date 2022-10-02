@@ -1,20 +1,31 @@
 /*
- * Mowgli MowPathApproachPoint Node v1.0
+ * Mowgli ApproachPose Node v1.0
  * (c) Georg Swoboda <cn@warp.at> 2022
  *
  * https://github.com/cloudn1ne/MowgliRover
  *
  * v1.0: inital release
  *
+ * Arguments:
+ * 
+ *    <ApproachPose pose="{pose}" planner="FTCPlanner"/>
+ * 
+ * Description:
+ * 
+ *    Approach the pose given by {pose} using the specified planner.
+ *     
+ * 
+ *    For this node to return SUCCESS, the specified pose needs to reached.
+ * 
  */
-#include "bt_mowpathapproachpoint.h"
+#include "bt_approachpose.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 
 #define BT_DEBUG 1
 
 /// @brief Approach Docking station (but does not actually dock)
-BT::NodeStatus MowPathApproachPoint::onStart()
+BT::NodeStatus ApproachPose::onStart()
 {
       geometry_msgs::PoseStamped approachPose;
       std::string planner;
@@ -30,7 +41,7 @@ BT::NodeStatus MowPathApproachPoint::onStart()
       double roll, pitch, yaw;
       m.getRPY(roll, pitch, yaw);
  
-      ROS_INFO_STREAM("[ MowPathApproachPoint: STARTING ] pose = x = "<< approachPose.pose.position.x << " y= " << approachPose.pose.position.y << " yaw = " << yaw*180/M_PI << " deg, planner = '" << planner << "'");
+      ROS_INFO_STREAM("[ ApproachPose: STARTING ] pose = x = "<< approachPose.pose.position.x << " y= " << approachPose.pose.position.y << " yaw = " << yaw*180/M_PI << " deg, planner = '" << planner << "'");
 #endif
       
       // send docking approach pose to MBF
@@ -43,7 +54,7 @@ BT::NodeStatus MowPathApproachPoint::onStart()
 }
 
 /// @brief Monitor the current MBF Goal Execution
-BT::NodeStatus MowPathApproachPoint::onRunning()
+BT::NodeStatus ApproachPose::onRunning()
 {
       actionlib::SimpleClientGoalState current_status(actionlib::SimpleClientGoalState::PENDING);
 
@@ -56,7 +67,7 @@ BT::NodeStatus MowPathApproachPoint::onRunning()
       {
             case actionlib::SimpleClientGoalState::SUCCEEDED: 
 #ifdef BT_DEBUG
-                                                            ROS_INFO_STREAM("[ MowPathApproachPoint: SUCCESS ]");
+                                                            ROS_INFO_STREAM("[ ApproachPose: SUCCESS ]");
 #endif            
 
                                                             return BT::NodeStatus::SUCCESS;
@@ -64,7 +75,7 @@ BT::NodeStatus MowPathApproachPoint::onRunning()
             case actionlib::SimpleClientGoalState::PENDING: 
             case actionlib::SimpleClientGoalState::ACTIVE:  
 #ifdef BT_DEBUG
-                                                            ROS_INFO_STREAM("[ MowPathApproachPoint: RUNNING ]");
+                                                            ROS_INFO_STREAM("[ ApproachPose: RUNNING ]");
 #endif                          
                                                             return BT::NodeStatus::RUNNING;
             //----------------------------------------------------------------------------            
@@ -74,22 +85,23 @@ BT::NodeStatus MowPathApproachPoint::onRunning()
             case actionlib::SimpleClientGoalState::ABORTED: 
             case actionlib::SimpleClientGoalState::LOST:    return BT::NodeStatus::FAILURE;
                         
-            default: ROS_ERROR_STREAM("[ MowPathApproachPoint: onRunning ] MBF returned unknown state "<< current_status.state_);
+            default: ROS_ERROR_STREAM("[ ApproachPose: onRunning ] MBF returned unknown state "<< current_status.state_);
       }
       
       // if we get here, something is wrong
       return BT::NodeStatus::FAILURE;
 }
 
-void MowPathApproachPoint::onHalted() 
+void ApproachPose::onHalted() 
 {
-      // nothing to do here...
+       // stop MBF
+      _mbfMoveBaseClient->cancelAllGoals();
 #ifdef BT_DEBUG              
-      ROS_INFO_STREAM("[ MowPathApproachPoint: interrupted ]");    
+      ROS_INFO_STREAM("[ ApproachPose: interrupted ]");    
 #endif      
 }
 
-void MowPathApproachPoint::printNavState(int state)
+void ApproachPose::printNavState(int state)
 {
     switch (state)
     {

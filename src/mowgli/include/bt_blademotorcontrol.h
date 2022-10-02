@@ -1,20 +1,16 @@
 
 
-#ifndef BT_MOW_CONTROL_H
-#define BT_MOW_CONTROL_H
+#ifndef BT_BLADEMOTORCONTROL_H
+#define BT_BLADEMOTORCONTROL_H
 
 #include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "mower_msgs/MowerControlSrv.h"
 
-// This is an asynchronous operation that will run in a separate thread.
-// It requires the input port "goal".
-
-class MowControl : public BT::StatefulActionNode
+class BladeMotorControl : public BT::StatefulActionNode
 {
-  public:
-    // Any TreeNode with ports must have a constructor with this signature
-    MowControl(const std::string& name, const BT::NodeConfiguration& config,
+  public:  
+    BladeMotorControl(const std::string& name, const BT::NodeConfiguration& config,
                ros::ServiceClient svcClient, bool *blade_motor_enabled )
       : StatefulActionNode(name, config),
       _svcClient(svcClient), _blade_motor_enabled(blade_motor_enabled)
@@ -41,4 +37,4 @@ class MowControl : public BT::StatefulActionNode
     bool *_blade_motor_enabled;
 };
 
-#endif // BT_MOW_CONTROL
+#endif // BT_BLADEMOTORCONTROL_H

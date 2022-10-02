@@ -45,7 +45,7 @@
 
 #include "bt_nodes.h"
 #include "bt_gpscontrol.h"
-#include "bt_mowcontrol.h"
+#include "bt_blademotorcontrol.h"
 #include "bt_dockingapproach.h"
 #include "bt_dockingapproachpoint.h"
 #include "bt_docking.h"
@@ -55,8 +55,8 @@
 #include "bt_getmowplan.h"
 #include "bt_getmowpath.h"
 #include "bt_getfirstpose.h"
-#include "bt_mowpathapproachpoint.h"
-#include "bt_mowpathfollow.h"
+#include "bt_approachpose.h"
+#include "bt_followpath.h"
 #include "bt_trimposes.h"
 
 
@@ -67,6 +67,7 @@
 #define ACTION_CLIENT_WAIT_TIMEOUT    1800.0        /* amount of time to wait for action servers, if there is no GPS, MBF will not come up, so we need a substanital amount of time potentially */
 
 using namespace BT;
+
 
 /*******************************************/
 /* global states used by nodes passed by & */
@@ -81,7 +82,9 @@ uint8_t gstate_highlevel_command = 0;
 ros::Time gstate_status_last_time(0.0);
 /* origin /odom */
 nav_msgs::Odometry gstate_odom;
+bool gstate_odom_valid = false;
 ros::Time gstate_odom_last_time(0.0);
+uint32_t valid_odom_counter;
 
 /***************/
 /* Subscribers */
@@ -104,6 +107,7 @@ ros::ServiceClient svcDockingPointClient;       /* /mower_map_service/get_dockin
 ros::ServiceClient svcMapClient;                /* /mower_map_service/get_mowing_area */
 ros::ServiceClient svcPlanPathClient;           /* /slic3r_coverage_planner/plan_path */
 ros::ServiceClient svcPlannerGetProgressClient; /* /move_base_flex/FTCPlanner/planner_get_progress */
+ros::ServiceClient svcPathProgressClient;       
 
 /*******************/
 /* Service servers */
@@ -262,6 +266,24 @@ bool highLevelCommandCB(mower_msgs::HighLevelControlSrvRequest &req, mower_msgs:
     return true;
 }
 
+/// @brief Called every 0.5s, update gstate_odom_valid
+/// @param timer_event 
+void checkOdom(const ros::TimerEvent &timer_event) {
+    if ( (ros::Time::now() - gstate_odom_last_time).toSec() < 1.0 ) // /odom received within last second
+    {
+            valid_odom_counter++;
+            if (valid_odom_counter > 5 )
+            {
+                gstate_odom_valid = true;
+            }
+    }
+    else
+    {
+            valid_odom_counter = 0; // reset
+            gstate_odom_valid = false;
+    }
+}
+
 int main(int argc, char **argv) 
 {
     ros::init(argc, argv, "mowgli_bt");
@@ -314,28 +336,19 @@ int main(int argc, char **argv)
     }
     ROS_INFO_STREAM("mowgli_bt: All services are now available");
 
-    BehaviorTreeFactory factory;    
-    using namespace DummyNodes;
-    // The recommended way to create a Node is through inheritance.
-    // Even if it requires more boilerplate, it allows you to use more functionalities
-    // like ports (we will discuss this in future tutorials).
-    factory.registerNodeType<ApproachObject>("ApproachObject");
+    // start /odom state engine
+    ros::Timer odomCheckTimer = n.createTimer(ros::Duration(0.5), checkOdom);
+
+    BehaviorTreeFactory factory;   
+
+    // bt_nodes 
+    using namespace DummyNodes;    
     factory.registerNodeType<SaySomething>("SaySomething");
-    // custom bt_nodes for debugging
     factory.registerNodeType<SayFloat>("SayFloat");
     factory.registerNodeType<SayInt>("SayInt");
     factory.registerNodeType<SayBool>("SayBool");
-
-    // Registering a SimpleActionNode using a function pointer.
-    // you may also use C++11 lambdas instead of std::bind
-    factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
+    factory.registerNodeType<SleepNode>("SleepNode");
     
-
-    //You can also create SimpleActionNodes using methods of a class
-    GripperInterface gripper;
-
-    factory.registerSimpleAction("OpenGripper", std::bind(&GripperInterface::open, &gripper));
-    factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &gripper));
 
     // Mowgli Nodes
     // bt_gpscontrol
@@ -349,21 +362,21 @@ int main(int argc, char **argv)
     // bt_trimposes
     factory.registerNodeType<TrimPoses>("TrimPoses");
 
-    // bt_mowpathfollow (MowPathFollow)
-    NodeBuilder builder_MowPathFollow =
+    // bt_followpath (FollowPath)
+    NodeBuilder builder_FollowPath =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<MowPathFollow>( name, config, srvMbfExePathClient);
+        return std::make_unique<FollowPath>( name, config, srvMbfExePathClient, svcPlannerGetProgressClient);
     };
-    factory.registerBuilder<MowPathFollow>( "MowPathFollow", builder_MowPathFollow);
+    factory.registerBuilder<FollowPath>( "FollowPath", builder_FollowPath);
 
-    // bt_mowpathapproachpoint (MowPathApproachPoint)
-    NodeBuilder builder_MowPathApproachPoint =
+    // bt_approachpose (ApproachPose)
+    NodeBuilder builder_ApproachPose =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<MowPathApproachPoint>( name, config, srvMbfMoveBaseClient);
+        return std::make_unique<ApproachPose>( name, config, srvMbfMoveBaseClient);
     };
-    factory.registerBuilder<MowPathApproachPoint>( "MowPathApproachPoint", builder_MowPathApproachPoint);
+    factory.registerBuilder<ApproachPose>( "ApproachPose", builder_ApproachPose);
 
     // bt_getmowplan (GetMowPlan)    
     NodeBuilder builder_GetMowPlan =
@@ -415,13 +428,13 @@ int main(int argc, char **argv)
     };
     factory.registerBuilder<DriveForward>( "DriveForward", builder_DriveForward);
 
-    // bt_mowcontrol (MowControl)
-    NodeBuilder builder_MowControl =
+    // bt_blademotorcontrol (BladeMotorControl)
+    NodeBuilder builder_BladeMotorControl =
     [](const std::string& name, const NodeConfiguration& config)
     {
-        return std::make_unique<MowControl>( name, config, svcMowClient, &gstate_blade_motor_enabled );
+        return std::make_unique<BladeMotorControl>( name, config, svcMowClient, &gstate_blade_motor_enabled );
     };
-    factory.registerBuilder<MowControl>( "MowControl", builder_MowControl);
+    factory.registerBuilder<BladeMotorControl>( "BladeMotorControl", builder_BladeMotorControl);
 
     // bt_status (GetMowerBatteryVoltage)
     NodeBuilder builder_GetMowerBatteryVoltage =
@@ -430,14 +443,6 @@ int main(int argc, char **argv)
         return std::make_unique<GetMowerBatteryVoltage>( name, config, &gstate_v_battery );
     };
     factory.registerBuilder<GetMowerBatteryVoltage>( "GetMowerBatteryVoltage", builder_GetMowerBatteryVoltage);
-
-    // bt_status (GetMowerBladeState)
-    NodeBuilder builder_GetMowerBladeState =
-    [](const std::string& name, const NodeConfiguration& config)
-    {
-        return std::make_unique<GetMowerBladeState>( name, config, &gstate_blade_motor_enabled );
-    };
-    factory.registerBuilder<GetMowerBladeState>( "GetMowerBladeState", builder_GetMowerBladeState);
 
     // bt_status (IsCharging)
     NodeBuilder builder_IsCharging =
@@ -454,6 +459,22 @@ int main(int argc, char **argv)
         return std::make_unique<IsMowing>( name, config, &gstate_blade_motor_enabled );
     };
     factory.registerBuilder<IsMowing>( "IsMowing", builder_IsMowing);
+
+    // bt_status (IsOdomValid)
+    NodeBuilder builder_IsOdomValid =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<IsOdomValid>( name, config, &gstate_odom_valid );
+    };
+    factory.registerBuilder<IsOdomValid>( "IsOdomValid", builder_IsOdomValid);
+
+    // bt_status (WaitForOdom)
+    NodeBuilder builder_WaitForOdom =
+    [](const std::string& name, const NodeConfiguration& config)
+    {
+        return std::make_unique<WaitForOdom>( name, config, &gstate_odom_valid );
+    };
+    factory.registerBuilder<WaitForOdom>( "WaitForOdom", builder_WaitForOdom);
 
     // bt_status (GetHighLevelCommand)    
     NodeBuilder builder_GetHighLevelCommand =

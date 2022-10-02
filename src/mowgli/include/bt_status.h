@@ -4,12 +4,9 @@
 #include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 
-
-// This is an asynchronous operation that will run in a separate thread.
 class GetMowerBatteryVoltage : public BT::SyncActionNode
 {
-  public:
-    // Any TreeNode with ports must have a constructor with this signature
+  public:    
     GetMowerBatteryVoltage(const std::string& name, const BT::NodeConfiguration& config,
                     float *state_v_battery )
       : SyncActionNode(name, config),
@@ -31,8 +28,7 @@ class GetMowerBatteryVoltage : public BT::SyncActionNode
 
 class GetMowerBladeState : public BT::SyncActionNode
 {
-  public:
-    // Any TreeNode with ports must have a constructor with this signature
+  public:    
     GetMowerBladeState(const std::string& name, const BT::NodeConfiguration& config,
                        bool *blade_motor_enabled )
       : SyncActionNode(name, config),
@@ -53,8 +49,7 @@ class GetMowerBladeState : public BT::SyncActionNode
 
 class IsCharging : public BT::SyncActionNode
 {
-  public:
-    // Any TreeNode with ports must have a constructor with this signature
+  public:    
     IsCharging(const std::string& name, const BT::NodeConfiguration& config,
                        bool *is_charging )
       : SyncActionNode(name, config),
@@ -69,8 +64,7 @@ class IsCharging : public BT::SyncActionNode
 
 class IsMowing : public BT::SyncActionNode
 {
-  public:
-    // Any TreeNode with ports must have a constructor with this signature
+  public:    
     IsMowing(const std::string& name, const BT::NodeConfiguration& config,
                        bool *blade_motor_enabled )
       : SyncActionNode(name, config),
@@ -85,8 +79,7 @@ class IsMowing : public BT::SyncActionNode
 
 class GetHighLevelCommand : public BT::SyncActionNode
 {
-  public:
-    // Any TreeNode with ports must have a constructor with this signature
+  public:    
     GetHighLevelCommand(const std::string& name, const BT::NodeConfiguration& config,
                        uint8_t *highlevel_command )
       : SyncActionNode(name, config),
@@ -98,7 +91,7 @@ class GetHighLevelCommand : public BT::SyncActionNode
   
     static BT::PortsList providedPorts()
     {
-        return{ BT::BidirectionalPort<std::string>("output_key") };
+        return{ BT::BidirectionalPort<std::string>("cmd_out") };
     }
 
 
@@ -106,5 +99,50 @@ class GetHighLevelCommand : public BT::SyncActionNode
   private:      
     uint8_t *_highlevel_command;
 };
+
+
+/// @brief return state of /odom topic
+class IsOdomValid : public BT::SyncActionNode
+{
+  public:
+    
+    IsOdomValid(const std::string& name, const BT::NodeConfiguration& config,
+                       bool *odom_valid )
+      : SyncActionNode(name, config),
+      _odom_valid(odom_valid)
+    {
+    
+    }
+
+    BT::NodeStatus tick() override;
+
+  private:      
+    bool *_odom_valid;
+    
+};
+
+
+class WaitForOdom : public BT::StatefulActionNode
+{
+  public:
+    WaitForOdom(const std::string& name, const BT::NodeConfiguration& config,
+               bool *odom_valid )         
+      : StatefulActionNode(name, config),
+      _odom_valid(odom_valid)
+    {
+        
+    }
+
+    BT::NodeStatus onStart() override;
+
+    BT::NodeStatus onRunning() override;
+
+    virtual void onHalted() override;
+    
+  private:          
+    bool *_odom_valid;
+};
+
+
 
 #endif // BT_STATUS_H

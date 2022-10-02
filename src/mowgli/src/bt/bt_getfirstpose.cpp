@@ -6,6 +6,16 @@
  *
  * v1.0: inital release
  *
+ * Arguments:
+ * 
+ *    <GetFirstPose path="{mowpath}" pose_out="{first_pose}"/>
+ * 
+ * Description:
+ * 
+ *    Extract the fist pose out of a path and save it to pose_out.
+ * 
+ *    For this node to return SUCCESS, the mow path must contain at least one pose
+ * 
  */
 #include "bt_getfirstpose.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -19,13 +29,13 @@ BT::NodeStatus GetFirstPose::tick()
 #ifdef BT_DEBUG    
       ROS_INFO("mowgli_bt: GetFirstPose::tick()");
 #endif       
-      nav_msgs::Path mowPath;
-      getInput("mowpath", mowPath);
+      nav_msgs::Path path;
+      getInput("path", path);
 
-      auto &poses = mowPath.poses;
+      auto &poses = path.poses;
 
 #ifdef BT_DEBUG          
-      ROS_INFO_STREAM("mowgli_bt: GetFirstPose() mowpath has " << (poses.size()) << " poses");
+      ROS_INFO_STREAM("mowgli_bt: GetFirstPose() path has " << (poses.size()) << " poses");
 #endif  
       if (poses.size() >= 1)
       {
@@ -44,7 +54,7 @@ BT::NodeStatus GetFirstPose::tick()
       else
       {
 #ifdef BT_DEBUG          
-            ROS_INFO_STREAM("mowgli_bt: GetFirstPose() there are no poses left in the mowpath");
+            ROS_INFO_STREAM("mowgli_bt: GetFirstPose() there are no poses left in the path");
 #endif             
             return BT::NodeStatus::FAILURE;
       }

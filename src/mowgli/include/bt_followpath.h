@@ -1,5 +1,5 @@
-#ifndef BT_MOWPATHFOLLOW_H
-#define BT_MOWPATHFOLLOW_H
+#ifndef BT_FOLLOWPATH_H
+#define BT_FOLLOWPATH_H
 
 #include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -10,15 +10,18 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include <tf2/LinearMath/Transform.h>
 #include "mower_map/GetDockingPointSrv.h"
+#include "ftc_local_planner/PlannerGetProgress.h"
 
-class MowPathFollow : public BT::StatefulActionNode
+class FollowPath : public BT::StatefulActionNode
 {
   public:    
-    MowPathFollow(const std::string& name, const BT::NodeConfiguration& config,               
-               actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfExePathClient                             
+    FollowPath(const std::string& name, const BT::NodeConfiguration& config,               
+               actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfExePathClient,
+               ros::ServiceClient svcPlannerGetProgressClient                  
                )
       : StatefulActionNode(name, config), 
-      _mbfExePathClient(mbfExePathClient)
+      _mbfExePathClient(mbfExePathClient),
+      _svcPlannerGetProgressClient(svcPlannerGetProgressClient)
     {        
     }
 
@@ -26,8 +29,9 @@ class MowPathFollow : public BT::StatefulActionNode
     static BT::PortsList providedPorts()
     {
         return{ 
-                BT::InputPort<nav_msgs::Path>("mowpath"),
-                BT::InputPort<std::string>("planner") 
+                BT::InputPort<nav_msgs::Path>("path"),
+                BT::InputPort<std::string>("planner"), 
+                BT::OutputPort<int>("current_index")
               };
     }
 
@@ -39,9 +43,13 @@ class MowPathFollow : public BT::StatefulActionNode
 
     virtual void printNavState(int state);
 
+    virtual int getCurrentMowPathIndex();
+
   private:            
     actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *_mbfExePathClient;  
+    ros::ServiceClient _svcPlannerGetProgressClient;
+    nav_msgs::Path _path;
         
 };
 
-#endif // BT_MOWPATHFOLLOW_H
+#endif // BT_FOLLOWPATH_H

@@ -5,7 +5,27 @@
  * https://github.com/cloudn1ne/MowgliRover
  *
  * v1.0: inital release
+ * 
+ * Arguments:
+ * 
+ *    <ForLoop 
+ *           loop_var="{loopvar}"
+ *           loop_var_start="<start>"
+ *           loop_var_until="<until>"
+ *           increment_by="<inc>" 
+ *    />
+ *      <FirstNode/>
+ *      <SecondNode/>
+ *    </ForLoop>
+ * 
+ * Description:
+ * 
+ *    As long as <FirstNode> returns SUCCESS it will be ticked until loop_var reaches loop_var_until.
+ *    loop_var must be a blackboard reference, which can be used within the loop to iterate over an array for example.
+ *    The amount of increment is set via increment_by
  *
+ *    The the loop is completed (or prematurely exited) the <SecondNode> will be ticked.
+ * 
  */
 
 #include "bt_forloop.h"

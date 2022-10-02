@@ -5,7 +5,21 @@
  * https://github.com/cloudn1ne/MowgliRover
  *
  * v1.0: inital release
- *
+ * 
+ * 
+ * Arguments:
+ * 
+ *    <DockingApproachPoint docking_approach_distance="<distance_in_meter>" planner="<planner_name>"/>
+ * 
+ * Description:
+ * 
+ *    Calculate a single pose that represents docking_approach_distance before the docking point (2nd X press during map recording),
+ *    and move the bot to that pose.
+ * 
+ *    Note: docking_approach_distance should match the value used in the <DockingApproach> node
+ * 
+ *    For this node to return SUCCESS, the docking approach points needs to be reached.
+ * 
  */
 #include "bt_dockingapproachpoint.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -97,8 +111,9 @@ BT::NodeStatus DockingApproachPoint::onRunning()
 }
 
 void DockingApproachPoint::onHalted() 
-{
-      // nothing to do here...
+{      
+      // stop MBF
+      _mbfMoveBaseClient->cancelAllGoals();
 #ifdef BT_DEBUG              
       ROS_INFO_STREAM("[ DockingApproachPoint: interrupted ]");    
 #endif      

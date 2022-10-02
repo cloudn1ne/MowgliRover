@@ -1,7 +1,7 @@
 
 
-#ifndef BT_MOWPATHAPPROACHPOINT_H
-#define BT_MOWPATHAPPROACHPOINT_H
+#ifndef BT_APPROACHPOSE_H
+#define BT_APPROACHPOSE_H
 
 #include "ros/ros.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -12,15 +12,10 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include <tf2/LinearMath/Transform.h>
 
-
-// This is an asynchronous operation that will run in a separate thread.
-// It requires the input port "goal".
-
-class MowPathApproachPoint : public BT::StatefulActionNode
+class ApproachPose : public BT::StatefulActionNode
 {
   public:
-    // Any TreeNode with ports must have a constructor with this signature
-    MowPathApproachPoint(const std::string& name, const BT::NodeConfiguration& config,               
+    ApproachPose(const std::string& name, const BT::NodeConfiguration& config,               
                actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *mbfMoveBaseClient               
                )
       : StatefulActionNode(name, config), 
@@ -49,4 +44,4 @@ class MowPathApproachPoint : public BT::StatefulActionNode
     actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *_mbfMoveBaseClient;
 };
 
-#endif // BT_MOWPATHAPPROACHPOINT_H
+#endif // BT_APPROACHPOSE_H
