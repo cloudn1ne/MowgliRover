@@ -1,14 +1,14 @@
 # BT Nodes for Environment variables
 ## Description
 
-Write environment variable {var} to blackboard variable {XXX_out}
+Load environment variable {var} to blackboard variable {XXX_out}
 XXX needs to match the extracted type.
 
 ## Returns
 
-SUCCESS if env variable has been been written to blackboard
+*SUCCESS* if env variable has been been written to blackboard
 
-FAILURE if no such env variable exists
+*FAILURE* if no such env variable exists
 
 ## Examples:
 
