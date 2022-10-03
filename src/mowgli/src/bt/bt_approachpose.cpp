@@ -24,7 +24,7 @@
 
 #define BT_DEBUG 1
 
-/// @brief Approach Docking station (but does not actually dock)
+/// @brief Approach a Pose
 BT::NodeStatus ApproachPose::onStart()
 {
       geometry_msgs::PoseStamped approachPose;

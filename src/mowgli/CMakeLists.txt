@@ -166,6 +166,7 @@ add_executable(mowgli_bt
                src/bt/bt_approachpose.cpp
                src/bt/bt_trimposes.cpp
                src/bt/bt_env.cpp
+               src/bt/bt_generate2dpose.cpp
                src/bt/loggers/bt_statelogger.cpp
 )
 add_executable(mowgli_proxy src/mowgli_proxy.cpp)

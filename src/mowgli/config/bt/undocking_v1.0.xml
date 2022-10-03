@@ -1,0 +1,24 @@
+<!--
+- 
+- Mowgli Undocking v1.0
+-
+- (c) Georg Swoboda <cn@warp.at> 2022
+- https://github.com/cloudn1ne/MowgliRover
+-
+- *) If currently charging (in Docking Station)
+- *)    Drive back 1.5 meters
+-
+-->
+<root>
+    <BehaviorTree ID="Undocking">
+        <Sequence name="seq_Undocking">
+            <IfThenElse> 
+                <IsCharging/>  <!-- IF isCharging-->
+                <DriveBackward distance="1.0" planner="DockingFTCPlanner"/>  <!-- THEN -->    
+                <ForceSuccess> <!-- force SUCCESS even if we weren't docked so the sequence can continue -->
+                    <SayString message="Not undocking as we are not in the Dock currently" />
+                </ForceSuccess>
+            </IfThenElse>
+        </Sequence>
+    </BehaviorTree>
+ </root>      

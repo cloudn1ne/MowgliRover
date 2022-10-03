@@ -1,0 +1,74 @@
+<launch>
+ <!-- external IMU filtering -->
+ <include file="$(find mowgli)/launch/include/madgwick.launch" />
+
+ <!-- GPS with basestation ntrip.warp.at -->
+ <include file="$(find mowgli)/launch/include/gps_rtk_ntrip_client.launch" />
+
+ <!-- EKF -->
+ <include file="$(find mowgli)/launch/include/ekf.launch" />
+
+ <!-- Mowgli/OM to HomeAssistant Proxy -->
+ <node pkg="mowgli" type="om_ha_bridge.py" name="om_ha_bridge" output="screen" respawn="true"/>
+ <node pkg="mowgli" type="ha_om_bridge.py" name="ha_om_bridge" output="screen" respawn="true"/>
+
+ <!-- Mowgli to OM Proxy -->
+ <node pkg="mowgli" type="mowgli_proxy" name="mowgli_to_om_proxy" required="true" output="screen">
+    <param name="datum_lat" value="$(env MOWGLI_DATUM_LAT)"/>   
+    <param name="datum_long" value="$(env MOWGLI_DATUM_LONG)" />
+    <param name="imu_offset" value="$(env MOWGLI_IMU_OFFSET)" />
+    <param name="gps_filter_factor" value="$(env MOWGLI_GPS_FILTER_FACTOR)" />
+    <param name="gps_antenna_offset" value="$(env MOWGLI_GPS_ANTENNA_OFFSET)" />
+    <param name="dr_max_duration_sec" value="$(env MOWGLI_DR_MAX_DURATION_SEC)" />
+    <param name="dr_update_interval" value="$(env MOWGLI_DR_UPDATE_INTERVAL)" />
+    <param name="max_distance_to_last_gps_pos" value="$(env MOWGLI_MAX_DISTANCE_TO_LAST_GPS_POS)" />
+    <param name="gpsrtk_fix_required" value="false" />
+ </node>
+ <!-- Mowgli Blade Manager -->
+ <node pkg="mowgli" type="mowgli_blade" name="mowgli_to_om_blade_manager" required="true" output="screen" />
+ <!-- OM specific settings below this comment-->
+ <node name="move_base_flex" pkg="mbf_costmap_nav" type="mbf_costmap_nav" required="true" output="screen">
+    <remap from="cmd_vel" to="/nav_vel"/>
+    <rosparam file="$(find mowgli)/params/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find mowgli)/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find mowgli)/params/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/move_base_flex.yaml" command="load"/>
+    <rosparam file="$(find mowgli)/params/ftc_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/calibration_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/docking_ftc_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/free_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/global_planner_params.yaml" command="load" /> 
+ </node>
+ <node name="move_base_legacy_relay" pkg="mbf_costmap_nav" type="move_base_legacy_relay.py" respawn="true">
+    <param name="base_local_planner" value="FreePlanner" />
+    <param name="base_global_planner" value="GlobalPlanner" />
+ </node>
+
+ <node pkg="mower_map" type="mower_map_service" name="map_service" output="screen"/>
+
+ <!-- Mowgli Behavior Tree -->
+ <node pkg="mowgli" type="mowgli_bt" name="mowgli_bt" required="true" output="screen">
+   <param name="xml_path" value="$(find mowgli)/config/bt/test.xml" />
+ </node>
+
+
+ <node pkg="slic3r_coverage_planner" type="slic3r_coverage_planner" name="slic3r_coverage_planner" output="screen"/>
+ <node pkg="joy" name="joy" type="joy_node" required="true" >
+        <param name="~autorepeat_rate" value="10.0"/>
+        <param name="~coalesce_interval" value="0.06"/>
+ </node>
+ <node pkg="teleop_twist_joy" name="joy_teleop" type="teleop_node" required="true" >
+        <remap from="cmd_vel" to="joy_vel"/>
+        <param name="~scale_linear" value="0.2"/>
+        <param name="~scale_angular" value="0.5"/>
+        <param name="~scale_linear_turbo" value="1.0"/>
+        <param name="~scale_angular_turbo" value="3.0"/>
+        <param name="~enable_turbo_button" value="4"/>
+ </node>
+ <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
+        <remap from="cmd_vel_out" to="/cmd_vel"/>
+        <rosparam file="$(find mowgli)/params/twist_mux_topics.yaml" command="load"/>
+ </node>
+
+</launch>

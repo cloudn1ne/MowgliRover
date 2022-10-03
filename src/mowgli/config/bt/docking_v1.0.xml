@@ -21,13 +21,17 @@
                     <Sequence name="DockingAttempt">        
                         <DockingApproachPoint docking_approach_distance="0.75" planner="FTCPlanner"/>        
                         <DockingApproach docking_approach_distance="0.75" planner="FTCPlanner"/>                 
-                        <Docking docking_distance="0.50" planner="DockingFTCPlanner"/>                              
+                        <Docking docking_distance="0.50" planner="DockingFTCPlanner"/>     
+                        <!-- wait a little then check we are still charging in case we didnt get it perfectly the first time -->                        
+                        <Delay delay_msec="3000">
+                            <IsCharging/>
+                        </Delay>
                     </Sequence>
                     <ForceFailure> <!--force next retry attempt, by failing Fallback -->
-                    <DriveBackward distance="1.5" planner="DockingFTCPlanner"/>
+                        <DriveBackward distance="1.5" planner="DockingFTCPlanner"/>
                     </ForceFailure>
                 </Fallback>         
             </RetryUntilSuccessful>
         </Sequence>
     </BehaviorTree>
- </root>      
+ </root>

@@ -13,19 +13,13 @@
 - *)        If the MowPathApproachPoint has been reached we will enable the Blade Motor and start following the MowPath
 - *) at the end we make sure the Blade Motor is switched off
 -->
-<root>
+<root>    
     <BehaviorTree ID="Mowing">        
       <Sequence name="Mowing">
         <Sequence name="seq_EnvVars">
           <GetEnvBool var="OM_ENABLE_MOWER" bool_out="{enable_mower}"/> <!-- blackboard variables are only valid within the same subtree, so we need to pull them in here -->
         </Sequence>
-        <IfThenElse> 
-          <IsCharging/>  <!-- IF isCharging-->
-          <DriveBackward distance="1.0" planner="DockingFTCPlanner"/>  <!-- THEN -->    
-          <ForceSuccess> <!-- force SUCCESS even if we weren't docked so the sequence can continue -->
-            <SayString message="Not undocking as we are not in the Dock currently" />
-          </ForceSuccess>
-        </IfThenElse>
+        <SubTree ID="Undocking"/> <!-- undocking_vX.X.xml -->
         <SubTree ID="WaitForOdom"/>
         <ForLoop
           loop_var="{area_index}"

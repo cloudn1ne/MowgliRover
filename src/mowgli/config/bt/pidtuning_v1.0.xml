@@ -1,0 +1,59 @@
+<!--
+- 
+- Mowgli PIDTuning Behavior v1.0
+-
+- (c) Georg Swoboda <cn@warp.at> 2022
+- https://github.com/cloudn1ne/MowgliRover
+-
+- Subtree: PIDTuning
+-   *) Undock if docked
+-   *) Drive back and forth between two points (2D Poses)
+-   *) Dock
+-
+-->
+<root main_tree_to_execute = "PIDTuning" >
+    <include ros_pkg="mowgli" path="config/bt/undocking_v1.0.xml"/>
+    <include ros_pkg="mowgli" path="config/bt/docking_v1.0.xml"/>
+    
+    <BehaviorTree ID="WaitForOdom">
+      <Sequence>
+        <Timeout msec="600000">  <!-- Wait for up to 10min to regain /odom (GPS fix)-->
+            <WaitForOdom/>
+        </Timeout>
+        <SayString message="============ ODOM is okay again ===========" />
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Goto2DPoseWithRetry">
+        <RetryUntilSuccessful num_attempts="5" name="retry_ApproachPose">   
+          <Sequence>
+            <SubTree ID="WaitForOdom"/>
+            <ApproachPose pose="{goto_pose}" planner="FTCPlanner"/>        
+          </Sequence>
+        </RetryUntilSuccessful>
+    </BehaviorTree>
+
+    <!--
+      Drive back and forth between two 2D Poses (see Generate2DPose) below.
+      Bot will undock first if docked and return to the dock once drive cycle is complete      
+    -->
+    <BehaviorTree ID="PIDTuning">
+      <Sequence>
+        <SubTree ID="Undocking"/> <!-- undocking_vX.X.xml -->
+        <Repeat num_cycles="3">
+          <Sequence>
+            <Generate2DPose x="-1" y="-3" yaw="180" pose_out="{pose}"/>
+            <SubTree ID="Goto2DPoseWithRetry" goto_pose="pose"/> <!-- make {pose} available as {goto_pose} within the subtree -->
+            
+            <Generate2DPose x="-9" y="-3" yaw="180" pose_out="{pose}"/>
+            <SubTree ID="Goto2DPoseWithRetry" goto_pose="pose"/>             
+
+            <SayString message="PIDTuning: one cycle completed"/>
+          </Sequence>           
+        </Repeat>
+        <SayString message="PIDTuning: completed going home"/>
+        <SubTree ID="Docking"/> <!-- docking_v1X.X.xml -->
+        <SayString message="PIDTuning: finished"/>
+      </Sequence>      
+    </BehaviorTree>    
+</root>

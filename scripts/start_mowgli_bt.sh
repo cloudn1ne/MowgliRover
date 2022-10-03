@@ -10,5 +10,16 @@ else
 fi
 
 cd ~/MowgliRover
-roslaunch mowgli mowgli_bt.launch
+if [ "$1" == "test" ];
+then
+    echo ""
+    echo "======================================================================"
+    echo "= starting with test.xml !"
+    echo "======================================================================"
+    echo ""
+    sleep 1
+    roslaunch mowgli mowgli_bt_test.launch
+else
+    roslaunch mowgli mowgli_bt_test.launch
+fi
 cd -

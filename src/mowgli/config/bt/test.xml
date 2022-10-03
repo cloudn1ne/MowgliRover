@@ -1,17 +1,18 @@
 <!--
 - 
-- Mowgli Behavior v1.0
+- Mowgli test Behavior v1.0
 -
 - (c) Georg Swoboda <cn@warp.at> 2022
 - https://github.com/cloudn1ne/MowgliRover
 -
-- *) Larger sub-behaviors are in their own files, including versioning.
+- *) TEST XML FOR VARIOUS NODES
 -
 -->
 <root main_tree_to_execute = "MainTree" >
-    <include ros_pkg="mowgli" path="config/bt/docking_v1.0.xml"/>
+    <include ros_pkg="mowgli" path="config/bt/undocking_v1.0.xml"/>
     <include ros_pkg="mowgli" path="config/bt/docking_v1.0.xml"/>
     <include ros_pkg="mowgli" path="config/bt/mowing_v1.0.xml"/>
+    <include ros_pkg="mowgli" path="config/bt/pidtuning_v1.0.xml"/>
     
     <BehaviorTree ID="WaitForOdom">
       <Sequence>
@@ -30,8 +31,9 @@
       </Sequence>
     </BehaviorTree>
 
+  
     <BehaviorTree ID="hlc_START">
-      <SubTree ID="Mowing"/> <!-- mowing_v1X.X.xml -->
+      <SubTree ID="PIDTuning"/>
     </BehaviorTree>
 
     <BehaviorTree ID="hlc_HOME">

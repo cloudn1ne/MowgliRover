@@ -28,7 +28,7 @@ BT::NodeStatus BladeMotorControl::onStart()
       bool inp_enable;
       getInput("enable", inp_enable);
 #ifdef BT_DEBUG        
-      ROS_INFO_STREAM("[ BladeMotorControl: STARTED ]. enable='"<< inp_enable << "'");
+      ROS_INFO_STREAM("[ BladeMotorControl: STARTED ] enable='"<< inp_enable << "'");
 #endif
       requested_state = inp_enable;              
       if( requested_state == *_blade_motor_enabled ) {

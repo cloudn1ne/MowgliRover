@@ -63,6 +63,7 @@
 #include "bt_followpath.h"
 #include "bt_trimposes.h"
 #include "bt_env.h"
+#include "bt_generate2dpose.h"
 
 
 // BT primitives
@@ -366,6 +367,8 @@ int main(int argc, char **argv)
     factory.registerNodeType<GetFirstPose>("GetFirstPose");
     // bt_trimposes
     factory.registerNodeType<TrimPoses>("TrimPoses");
+    // bt_generate2dpose
+    factory.registerNodeType<Generate2DPose>("Generate2DPose");
 
     // bt_followpath (FollowPath)
     NodeBuilder builder_FollowPath =
