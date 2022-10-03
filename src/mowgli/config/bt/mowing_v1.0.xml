@@ -46,7 +46,7 @@
                                 <Fallback name="ApproachFirstPoseFallback">
                                     <Sequence name="seq_ApproachFirstPose">         
                                         <GetFirstPose path="{mowpath}" pose_out="{first_pose}"/>
-                                        <ApproachPose pose="{first_pose}" planner="FTCPlannerTuning"/>
+                                        <ApproachPose pose="{first_pose}" planner="FTCPlanner"/>
                                     </Sequence>
                                     <ForceFailure> <!--force next RetryUntilSuccessful attempt, by failing Fallback -->
                                         <TrimPoses path="{mowpath}" begin="0" end="5"/> <!-- we trim 5 poses of the beginning of the mowpath, and reattempt to approach the new first_pose -->
@@ -55,7 +55,7 @@
                                 <Sequence name="seq_FollowMowPath">                                        
                                         <BladeMotorControl enable="{enable_mower}"/> <!-- Enable Blade Motor for Mow -->
                                         <Fallback name="ApproachFirstPoseFallback">  
-                                              <FollowPath path="{mowpath}" planner="FTCPlannerTuning" current_index="{mowpath_index}"/> <!-- Mow -->
+                                              <FollowPath path="{mowpath}" planner="FTCPlanner" current_index="{mowpath_index}"/> <!-- Mow -->
                                               <ForceFailure> <!--force next RetryUntilSuccessful attempt, by failing Fallback -->
                                                 <TrimPoses path="{mowpath}" begin="0" end="{mowpath_index}"/> <!--  Fallback: Trim already completed poses from the current mowpath -->                                                                                                
                                               </ForceFailure>
