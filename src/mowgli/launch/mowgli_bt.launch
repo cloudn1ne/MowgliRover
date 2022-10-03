@@ -35,7 +35,7 @@
     <rosparam file="$(find mowgli)/params/global_costmap_params.yaml" command="load" />
     <rosparam file="$(find mowgli)/params/move_base_flex.yaml" command="load"/>
     <rosparam file="$(find mowgli)/params/ftc_local_planner.yaml" command="load" />
-    <rosparam file="$(find mowgli)/params/calibration_local_planner.yaml" command="load" />
+    <rosparam file="$(find mowgli)/params/ftc_local_planner_tuning.yaml" command="load" />
     <rosparam file="$(find mowgli)/params/docking_ftc_local_planner.yaml" command="load" />
     <rosparam file="$(find mowgli)/params/free_local_planner.yaml" command="load" />
     <rosparam file="$(find mowgli)/params/global_planner_params.yaml" command="load" /> 

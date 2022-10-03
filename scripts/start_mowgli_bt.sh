@@ -20,6 +20,6 @@ then
     sleep 1
     roslaunch mowgli mowgli_bt_test.launch
 else
-    roslaunch mowgli mowgli_bt_test.launch
+    roslaunch mowgli mowgli_bt.launch
 fi
 cd -

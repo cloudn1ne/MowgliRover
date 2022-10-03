@@ -10,7 +10,7 @@
 -->
 <root main_tree_to_execute = "MainTree" >
     <include ros_pkg="mowgli" path="config/bt/docking_v1.0.xml"/>
-    <include ros_pkg="mowgli" path="config/bt/docking_v1.0.xml"/>
+    <include ros_pkg="mowgli" path="config/bt/undocking_v1.0.xml"/>
     <include ros_pkg="mowgli" path="config/bt/mowing_v1.0.xml"/>
     
     <BehaviorTree ID="WaitForOdom">

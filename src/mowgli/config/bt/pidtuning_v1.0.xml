@@ -28,7 +28,7 @@
         <RetryUntilSuccessful num_attempts="5" name="retry_ApproachPose">   
           <Sequence>
             <SubTree ID="WaitForOdom"/>
-            <ApproachPose pose="{goto_pose}" planner="FTCPlanner"/>        
+            <ApproachPose pose="{goto_pose}" planner="FTCPlannerTuning"/>        
           </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>
@@ -40,12 +40,12 @@
     <BehaviorTree ID="PIDTuning">
       <Sequence>
         <SubTree ID="Undocking"/> <!-- undocking_vX.X.xml -->
-        <Repeat num_cycles="3">
+        <Repeat num_cycles="99">
           <Sequence>
-            <Generate2DPose x="-1" y="-3" yaw="180" pose_out="{pose}"/>
+            <Generate2DPose x="-1" y="-2.5" yaw="180" pose_out="{pose}"/>
             <SubTree ID="Goto2DPoseWithRetry" goto_pose="pose"/> <!-- make {pose} available as {goto_pose} within the subtree -->
             
-            <Generate2DPose x="-9" y="-3" yaw="180" pose_out="{pose}"/>
+            <Generate2DPose x="-9" y="-2.5" yaw="180" pose_out="{pose}"/>
             <SubTree ID="Goto2DPoseWithRetry" goto_pose="pose"/>             
 
             <SayString message="PIDTuning: one cycle completed"/>
