@@ -174,7 +174,7 @@ sudo systemctl stop ModemManager
 
 ```
 sudo reboot
-````
+```
 
 ### Install complete
 
