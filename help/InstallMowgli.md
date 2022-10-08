@@ -151,7 +151,7 @@ Your YF mainbord needs to run https://github.com/cloudn1ne/Mowgli/tree/main/stm3
 In general its a good idea to update Mowgli (stm32) whenever there is a new release because some feature enhancements on MowgliRover will need new stm32 code (or fixes there). Hopefully a version system will soon be working that will tell you that your Mowgli (stm32) is too old when running MowgliRover.
 
 See https://github.com/cloudn1ne/Mowgli for more information how to do that.
-```
+
 ### Install the roscore and rosserial service scripts
 
 ```
@@ -181,5 +181,3 @@ sudo reboot
 If your Raspi comes back, then congratulations you are now ready to configure Mowgli and Openmower
 
 See [here](ConfigureMowgli.md) for the next steps
-
-
